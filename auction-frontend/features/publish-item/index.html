@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publish Product | Auction System</title>
+    <link rel="stylesheet" href="../../shared/css/global.css">
+    <link rel="stylesheet" href="publish.css">
+</head>
+<body>
+    
+    <div id="navbar-placeholder"></div>
+
+    <div class="main-content">
+        <div class="form-container">
+            <h2>4. פרסום מוצר חדש</h2>
+            
+            <div id="uiMessage" class="ui-message"></div>
+            
+            <form id="publishItemForm">
+                <div class="form-group">
+                    <label for="title">שם המוצר:</label>
+                    <input type="text" id="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoryId">קטגוריה:</label>
+                    <select id="categoryId" required>
+                        <option value="" disabled selected>Loading...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">תיאור המוצר:</label>
+                    <textarea id="description" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="imageFile">העלאת תמונה:</label>
+                    <input type="file" id="imageFile" accept="image/*" required>
+                </div>
+
+                <div class="row">
+                    <div class="col form-group">
+                        <label for="endTime">תאריך ושעת סיום:</label>
+                        <input type="datetime-local" id="endTime" required>
+                    </div>
+                    <div class="col form-group">
+                        <label for="startingPrice">מחיר התחלתי (ש"ח):</label>
+                        <input type="number" id="startingPrice" min="1" step="0.01" required>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" id="submitBtn" class="btn btn-primary">פרסם מכירה עכשיו</button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">ביטול</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="publish.js"></script>
+</body>
+</html>
