@@ -29,3 +29,15 @@ export async function createItem(itemData) {
     if (!response.ok) throw new Error(`Creation failed: ${response.status}`);
     return response;
 }
+
+
+/**
+ * Fetches active items from the server.
+ * Optional query parameters can be added for filtering/search.
+ */
+export async function getItems(filters = {}) {
+    const queryParams = new URLSearchParams(filters).toString();
+    const response = await fetch(`${API_BASE_URL}/items?${queryParams}`);
+    if (!response.ok) throw new Error(`Failed to fetch items. Status: ${response.status}`);
+    return response.json();
+}

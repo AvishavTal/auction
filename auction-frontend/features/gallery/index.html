@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction Gallery | Auction System</title>
+    <link rel="stylesheet" href="../../shared/css/global.css">
+    <link rel="stylesheet" href="gallery.css">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <main class="gallery-container">
+        <header class="gallery-header">
+            <h2>2. גלריית מכירות</h2>
+            <div class="header-actions">
+                <button onclick="location.href='../publish-item/index.html'" class="btn-publish">+ פרסם מוצר חדש למכירה</button>
+            </div>
+        </header>
+
+        <section class="filters-bar">
+            <input type="text" id="searchInput" placeholder="חיפוש חופשי של מוצר...">
+            <select id="categoryFilter">
+                <option value="">כל הקטגוריות</option>
+            </select>
+            <select id="priceFilter">
+                <option value="">כל המחירים</option>
+            </select>
+            <select id="sortFilter">
+                <option value="closingSoon">מיון: הקרוב לסיום</option>
+            </select>
+        </section>
+
+        <section id="itemsGrid" class="items-grid">
+            <p class="loading-status">טוען מכרזים...</p>
+        </section>
+    </main>
+
+    <script type="module" src="gallery.js"></script>
+</body>
+</html>
