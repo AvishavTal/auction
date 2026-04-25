@@ -1,0 +1,97 @@
+.item-details-layout {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 20px;
+    background: white;
+}
+
+.section-header {
+    border-bottom: 2px solid var(--primary-black);
+    margin-bottom: 30px;
+}
+
+.product-info-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.description-block {
+    margin: 20px 0;
+    line-height: 1.6;
+}
+
+.timer-red {
+    color: var(--error-text);
+    font-weight: bold;
+    font-size: 1.4rem;
+}
+
+.price-block {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-top: 30px;
+}
+
+.product-visual img {
+    width: 100%;
+    border: 1px dashed var(--border-gray);
+    padding: 10px;
+}
+
+/* Bidding Box */
+.bidding-section {
+    border: 2px solid var(--primary-black);
+    padding: 25px;
+    margin-bottom: 40px;
+}
+
+.input-row {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.input-group {
+    flex: 1;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-gray);
+}
+
+.btn-bid {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--primary-black);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+/* History Table */
+.bids-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bids-table th, .bids-table td {
+    border: 1px solid var(--border-gray);
+    padding: 12px;
+    text-align: right;
+}
+
+.bids-table th {
+    background-color: #f8f8f8;
+}

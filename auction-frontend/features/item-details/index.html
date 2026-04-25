@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details | Auction System</title>
+    <link rel="stylesheet" href="../../shared/css/global.css">
+    <link rel="stylesheet" href="item.css">
+</head>
+<body>
+    
+    <div id="navbar-placeholder"></div>
+
+    <main class="item-details-layout">
+        <header class="section-header">
+            <h2>3. דף מוצר והגשת הצעה</h2>
+        </header>
+
+        <section class="product-info-grid">
+            <div class="product-text">
+                <h1 id="itemTitle">Loading Product...</h1>
+                <p class="description-block">
+                    <strong>תיאור:</strong>
+                    <span id="itemDescription"></span>
+                </p>
+                <div class="timer-block">
+                    <p>זמן לסיום: <span id="countdown" class="timer-red">--:--:--</span></p>
+                    <small>(הצעה בדקות האחרונות תאריך את המכירה)</small>
+                </div>
+                <div class="price-block">
+                    מחיר נוכחי: <span id="currentPrice">0</span> ש"ח
+                </div>
+            </div>
+            <div class="product-visual">
+                <img id="itemImage" src="../../shared/components/placeholder.png" alt="Product Image">
+            </div>
+        </section>
+
+        <section class="bidding-section">
+            <h3>הגשת הצעה למכירה:</h3>
+            <div id="uiMessage" class="ui-message"></div>
+            
+            <form id="bidForm" class="bid-form">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="manualAmount">סכום הצעה ידנית:</label>
+                        <input type="number" id="manualAmount" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label for="proxyAmount">מקסימום להצעה אוטומטית (Proxy):</label>
+                        <input type="number" id="proxyAmount" step="0.01">
+                    </div>
+                </div>
+                <button type="submit" id="submitBidBtn" class="btn-bid">בצע הצעה</button>
+            </form>
+        </section>
+
+        <section class="history-section">
+            <h3>5 הצעות אחרונות:</h3>
+            <table class="bids-table">
+                <thead>
+                    <tr>
+                        <th>מציע</th>
+                        <th>סכום</th>
+                        <th>זמן</th>
+                    </tr>
+                </thead>
+                <tbody id="bidsHistoryTable">
+                    </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script type="module" src="item.js"></script>
+</body>
+</html>

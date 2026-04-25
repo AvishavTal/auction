@@ -41,3 +41,29 @@ export async function getItems(filters = {}) {
     if (!response.ok) throw new Error(`Failed to fetch items. Status: ${response.status}`);
     return response.json();
 }
+
+
+/**
+ * Fetch a single product by ID
+ */
+export async function getItemById(id) {
+    const response = await fetch(`${API_BASE_URL}/items/${id}`);
+    if (!response.ok) throw new Error(`Failed to fetch item ${id}`);
+    return response.json();
+}
+
+/**
+ * Submit a bid (Manual or Proxy)
+ */
+export async function placeBid(bidData) {
+    const response = await fetch(`${API_BASE_URL}/bids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bidData)
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Bid submission failed');
+    }
+    return response.json();
+}
