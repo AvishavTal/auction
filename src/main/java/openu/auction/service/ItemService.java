@@ -63,4 +63,8 @@ public class ItemService {
     public Optional<Item> findById(Long id) {
         return itemRepository.findById(id);
     }
+
+    public List<Item> findAll() {
+        return itemRepository.findAll();
+    }
 }
