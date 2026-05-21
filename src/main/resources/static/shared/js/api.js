@@ -30,31 +30,20 @@ export async function createItem(itemData) {
     return response;
 }
 
-
-/**
- * Fetches active items from the server.
- * Optional query parameters can be added for filtering/search.
- */
 export async function getItems(filters = {}) {
     const queryParams = new URLSearchParams(filters).toString();
-    const response = await fetch(`${API_BASE_URL}/items?${queryParams}`);
-    if (!response.ok) throw new Error(`Failed to fetch items. Status: ${response.status}`);
+    const url = queryParams ? `${API_BASE_URL}/items?${queryParams}` : `${API_BASE_URL}/items`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Items fetch failed: ${response.status}`);
     return response.json();
 }
 
-
-/**
- * Fetch a single product by ID
- */
 export async function getItemById(id) {
     const response = await fetch(`${API_BASE_URL}/items/${id}`);
     if (!response.ok) throw new Error(`Failed to fetch item ${id}`);
     return response.json();
 }
 
-/**
- * Submit a bid (Manual or Proxy)
- */
 export async function placeBid(bidData) {
     const response = await fetch(`${API_BASE_URL}/bids`, {
         method: 'POST',

@@ -1,5 +1,62 @@
-<html>
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .loading-container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border: 2px solid #000;
+            box-shadow: 10px 10px 0px #ccc;
+        }
+        .loading-container a {
+            color: #000;
+            font-weight: bold;
+        }
+    </style>
+    
+    <script type="module">
+        /**
+         * Application Entry Point Router
+         * Determines the initial screen for the user.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check authentication token or status here in the future
+            const isLoggedIn = false; 
+
+            if (isLoggedIn) {
+                // Redirect authenticated users straight to the gallery
+                window.location.href = 'features/gallery/index.html';
+            } else {
+                // Redirect unauthenticated users to the login/register page
+                // Temporary routing directly to gallery or login based on your current testing needs
+                window.location.href = 'features/gallery/index.html';
+            }
+        });
+    </script>
+</head>
 <body>
-    hello
+
+    <div class="loading-container">
+        <h2>Loading Auction System...</h2>
+        <p>If you are not redirected automatically, use the links below:</p>
+        <p>
+            <a href="features/gallery/index.html">Go to Gallery</a> | 
+            <a href="features/publish-item/index.html">Publish an Item</a>
+        </p>
+    </div>
+
 </body>
 </html>

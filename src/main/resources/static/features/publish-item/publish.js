@@ -10,6 +10,7 @@ const uiMessage = document.getElementById('uiMessage');
 function showStatus(text, isError = false) {
     uiMessage.textContent = text;
     uiMessage.className = `ui-message ${isError ? 'error' : 'success'}`;
+    uiMessage.style.display = 'block';
     setTimeout(() => { uiMessage.style.display = 'none'; }, 5000);
 }
 
@@ -39,23 +40,32 @@ async function handleFormSubmit(event) {
 
     try {
         const fileInput = document.getElementById('imageFile');
-        const { imagePath } = await uploadImage(fileInput.files[0]);
+        if (!fileInput.files[0]) throw new Error('Please select an image file.');
 
+        // Step 1: Upload the file
+        const uploadResponse = await uploadImage(fileInput.files[0]);
+        const uploadedImagePath = uploadResponse.imagePath;
+
+        // Step 2: Build the payload exactly as the API expects
         const payload = {
             title: document.getElementById('title').value,
-            categoryId: parseInt(categorySelect.value, 10),
             description: document.getElementById('description').value,
             startingPrice: parseFloat(document.getElementById('startingPrice').value),
             endTime: new Date(document.getElementById('endTime').value).toISOString(),
-            imagePaths: [imagePath]
+            category: { id: parseInt(categorySelect.value, 10) },
+            images: [
+                { imageUrl: uploadedImagePath }
+            ]
         };
 
+        // Step 3: Create the item
         await createItem(payload);
+        
         showStatus('Product successfully published!', false);
         form.reset();
     } catch (err) {
         console.error('Submission error:', err);
-        showStatus('Failed to publish. Check server connection.', true);
+        showStatus(`Failed to publish: ${err.message}`, true);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'פרסם מכירה עכשיו';
@@ -63,7 +73,6 @@ async function handleFormSubmit(event) {
 }
 
 document.addEventListener('DOMContentLoaded', initialize);
-
 form.addEventListener('submit', handleFormSubmit);
 
 cancelBtn.addEventListener('click', () => {

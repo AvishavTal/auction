@@ -1,38 +1,23 @@
 import { injectNavbar } from '../../shared/js/layout.js';
 import { getItemById, placeBid } from '../../shared/js/api.js';
 
-/**
- * Logic for Screen 3: Item Details and Bidding
- * All comments in English.
- */
-
-// UI Elements
 const uiMessage = document.getElementById('uiMessage');
 const submitBidBtn = document.getElementById('submitBidBtn');
 
 let currentItem = null;
 let countdownInterval = null;
 
-/**
- * Utility to display UI messages
- */
 function showStatus(text, isError = false) {
     uiMessage.textContent = text;
     uiMessage.className = `ui-message ${isError ? 'error' : 'success'}`;
     uiMessage.style.display = 'block';
 }
 
-/**
- * Extracts product ID from the URL query string
- */
 function getProductId() {
     const params = new URLSearchParams(window.location.search);
     return params.get('id');
 }
 
-/**
- * Calculates and updates the countdown timer
- */
 function updateTimer(endTimeStr) {
     const endTime = new Date(endTimeStr).getTime();
     const now = new Date().getTime();
@@ -60,33 +45,46 @@ function updateTimer(endTimeStr) {
 function renderProduct(item) {
     document.getElementById('itemTitle').textContent = item.title;
     document.getElementById('itemDescription').textContent = item.description;
-    document.getElementById('currentPrice').textContent = item.currentPrice.toLocaleString();
+    document.getElementById('currentPrice').textContent = item.currentPrice ? item.currentPrice.toLocaleString() : item.startingPrice.toLocaleString();
     
-    if (item.imagePaths && item.imagePaths.length > 0) {
-        document.getElementById('itemImage').src = item.imagePaths[0];
+    // Adjusted to the correct API media route serving the images from the Docker volume
+    const BACKEND_IMAGE_BASE = 'http://localhost:8080/api/media/';
+    const fallbackImage = 'https://picsum.photos/400/300?random=' + (item.id || 1);
+
+    if (item.images && item.images.length > 0) {
+        const imgName = item.images[0].imageUrl;
+        const finalImgUrl = imgName.startsWith('http') ? imgName : `${BACKEND_IMAGE_BASE}${imgName}`;
+        document.getElementById('itemImage').src = finalImgUrl;
+        
+        document.getElementById('itemImage').onerror = function() {
+            this.onerror = null;
+            this.src = fallbackImage;
+        };
+    } else {
+        document.getElementById('itemImage').src = fallbackImage;
     }
 
     // Render Bid History
     const historyTable = document.getElementById('bidsHistoryTable');
-    historyTable.innerHTML = item.lastBids.map(bid => `
-        <tr>
-            <td>${bid.username}</td>
-            <td>${bid.amount.toLocaleString()} ש"ח ${bid.isProxy ? '(אוטומטי)' : ''}</td>
-            <td>${new Date(bid.bidTime).toLocaleTimeString()}</td>
-        </tr>
-    `).join('');
+    if (item.lastBids && item.lastBids.length > 0) {
+        historyTable.innerHTML = item.lastBids.map(bid => `
+            <tr>
+                <td>${bid.username}</td>
+                <td>${bid.amount.toLocaleString()} ש"ח ${bid.isProxy ? '(אוטומטי)' : ''}</td>
+                <td>${new Date(bid.bidTime).toLocaleTimeString()}</td>
+            </tr>
+        `).join('');
+    } else {
+        historyTable.innerHTML = '<tr><td colspan="3" style="text-align:center;">אין הצעות עדיין</td></tr>';
+    }
 }
 
-/**
- * Handles bid submission (Manual and Proxy)
- */
 async function onBidSubmit(event) {
     event.preventDefault();
     
     const manualAmount = parseFloat(document.getElementById('manualAmount').value);
     const proxyAmount = parseFloat(document.getElementById('proxyAmount').value);
 
-    // Validation: At least one amount must be provided
     if (isNaN(manualAmount) && isNaN(proxyAmount)) {
         showStatus('אנא הזן סכום הצעה או מקסימום אוטומטי', true);
         return;
@@ -104,8 +102,6 @@ async function onBidSubmit(event) {
 
         await placeBid(bidData);
         showStatus('ההצעה התקבלה בהצלחה!');
-        
-        // Refresh page data to show new current price and history
         setTimeout(() => window.location.reload(), 1500);
 
     } catch (err) {
@@ -117,9 +113,6 @@ async function onBidSubmit(event) {
     }
 }
 
-/**
- * Page Initialization
- */
 async function init() {
     await injectNavbar();
     
@@ -133,7 +126,6 @@ async function init() {
         currentItem = await getItemById(id);
         renderProduct(currentItem);
         
-        // Start live countdown
         updateTimer(currentItem.endTime);
         countdownInterval = setInterval(() => updateTimer(currentItem.endTime), 1000);
 
