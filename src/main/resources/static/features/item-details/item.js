@@ -1,5 +1,5 @@
 import { injectNavbar } from '../../shared/js/layout.js';
-import { getItemById, placeBid } from '../../shared/js/api.js';
+import { getItemById, placeBid, getImageUrl } from '../../shared/js/api.js';
 
 const uiMessage = document.getElementById('uiMessage');
 const submitBidBtn = document.getElementById('submitBidBtn');
@@ -46,16 +46,13 @@ function renderProduct(item) {
     document.getElementById('itemTitle').textContent = item.title;
     document.getElementById('itemDescription').textContent = item.description;
     document.getElementById('currentPrice').textContent = item.currentPrice ? item.currentPrice.toLocaleString() : item.startingPrice.toLocaleString();
-    
-    // Adjusted to the correct API media route serving the images from the Docker volume
-    const BACKEND_IMAGE_BASE = 'http://localhost:8080/api/media/';
+
     const fallbackImage = 'https://picsum.photos/400/300?random=' + (item.id || 1);
 
     if (item.images && item.images.length > 0) {
         const imgName = item.images[0].imageUrl;
-        const finalImgUrl = imgName.startsWith('http') ? imgName : `${BACKEND_IMAGE_BASE}${imgName}`;
-        document.getElementById('itemImage').src = finalImgUrl;
-        
+        document.getElementById('itemImage').src = imgName.startsWith('http') ? imgName : getImageUrl(imgName);
+
         document.getElementById('itemImage').onerror = function() {
             this.onerror = null;
             this.src = fallbackImage;
@@ -81,7 +78,7 @@ function renderProduct(item) {
 
 async function onBidSubmit(event) {
     event.preventDefault();
-    
+
     const manualAmount = parseFloat(document.getElementById('manualAmount').value);
     const proxyAmount = parseFloat(document.getElementById('proxyAmount').value);
 
@@ -115,7 +112,7 @@ async function onBidSubmit(event) {
 
 async function init() {
     await injectNavbar();
-    
+
     const id = getProductId();
     if (!id) {
         showStatus('מזהה מוצר חסר', true);
@@ -125,7 +122,7 @@ async function init() {
     try {
         currentItem = await getItemById(id);
         renderProduct(currentItem);
-        
+
         updateTimer(currentItem.endTime);
         countdownInterval = setInterval(() => updateTimer(currentItem.endTime), 1000);
 

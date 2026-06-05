@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/")
@@ -18,13 +15,6 @@ public class ItemController {
     @Autowired
     private ItemService itemService;
 
-    @PostMapping("/media/upload")
-    public ResponseEntity<Map<String, String>> uploadMedia(@RequestParam("file") MultipartFile file) {
-        String filename = itemService.saveFile(file);
-        // Returns JSON as per payload sample[cite: 1]
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("imagePath", filename));
-    }
-
     @PostMapping("/items")
     public ResponseEntity<Item> createItem(@RequestBody Item item) {
         Item savedItem = itemService.createItem(item);
@@ -32,8 +22,12 @@ public class ItemController {
     }
 
     @GetMapping("/items")
-    public List<Item> getAllItems() {
-        return itemService.findAll();
+    public List<Item> getAllItems(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
+        return itemService.search(keyword, categoryId, minPrice, maxPrice);
     }
     @GetMapping("/items/{id}")
     public ResponseEntity<Item> getItemById(@PathVariable Long id) {

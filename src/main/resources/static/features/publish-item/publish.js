@@ -60,7 +60,7 @@ async function handleFormSubmit(event) {
 
         // Step 3: Create the item
         await createItem(payload);
-        
+
         showStatus('Product successfully published!', false);
         form.reset();
     } catch (err) {

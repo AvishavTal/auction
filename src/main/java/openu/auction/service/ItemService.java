@@ -4,6 +4,7 @@ import openu.auction.model.*;
 import openu.auction.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +27,10 @@ public class ItemService {
 
     public List<Category> getAllCategories() {
         return categoryRepository.findAll(); // Supports GET /api/categories
+    }
+
+    public Path resolveFile(String filename) {
+        return Paths.get(uploadDir).resolve(filename).normalize();
     }
 
     public String saveFile(MultipartFile file) {
@@ -66,5 +71,25 @@ public class ItemService {
 
     public List<Item> findAll() {
         return itemRepository.findAll();
+    }
+
+    public List<Item> search(String keyword, Long categoryId, Double minPrice, Double maxPrice) {
+        List<Specification<Item>> specs = new ArrayList<>();
+
+        if (keyword != null && !keyword.isBlank())
+            specs.add((root, query, cb) -> cb.like(cb.lower(root.get("title")), "%" + keyword.toLowerCase() + "%"));
+        if (categoryId != null)
+            specs.add((root, query, cb) -> cb.equal(root.get("category").get("id"), categoryId));
+        if (minPrice != null)
+            specs.add((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("startingPrice"), minPrice));
+        if (maxPrice != null)
+            specs.add((root, query, cb) -> cb.lessThanOrEqualTo(root.get("startingPrice"), maxPrice));
+
+        if (specs.isEmpty()) return itemRepository.findAll();
+
+        Specification<Item> spec = specs.get(0);
+        for (int i = 1; i < specs.size(); i++) spec = spec.and(specs.get(i));
+
+        return itemRepository.findAll(spec);
     }
 }

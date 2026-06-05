@@ -1,5 +1,9 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
+export function getImageUrl(filename) {
+    return `${API_BASE_URL}/media/${filename}`;
+}
+
 export async function getCategories() {
     const response = await fetch(`${API_BASE_URL}/categories`);
     if (!response.ok) throw new Error(`Categories fetch failed: ${response.status}`);
