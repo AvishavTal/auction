@@ -58,3 +58,76 @@ body {
     border: 1px solid var(--success-border);
     display: block;
 }
+
+/* Global Navbar Core Styling */
+.global-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--primary-black, #000000);
+    color: white;
+    padding: 15px 30px;
+    border-bottom: 2px solid var(--primary-black, #000000);
+}
+
+.nav-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 1px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.nav-links a:hover {
+    text-decoration: underline;
+}
+
+/* Highlighted Login button style */
+.nav-login-highlight {
+    background-color: white;
+    color: black !important;
+    padding: 8px 16px;
+    border: 1px solid white;
+    font-weight: bold;
+}
+
+.nav-login-highlight:hover {
+    background-color: #f0f0f0;
+    text-decoration: none !important;
+}
+
+/* Auth state components styling */
+.user-greeting {
+    font-size: 14px;
+    color: #e0e0e0;
+    border-right: 1px solid #444;
+    padding-right: 15px;
+}
+
+.nav-logout-btn {
+    background: transparent;
+    color: #ff5252;
+    border: 1px solid #ff5252;
+    padding: 6px 14px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.nav-logout-btn:hover {
+    background: #ff5252;
+    color: white;
+}
