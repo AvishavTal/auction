@@ -4,6 +4,14 @@
  * All comments are strictly in English.
  */
 
+export function requireLogin() {
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+        window.location.href = '../auth/index.html';
+        return false;
+    }
+    return true;
+}
+
 export async function injectNavbar() {
     const placeholder = document.getElementById('navbar-placeholder');
     if (!placeholder) return;

@@ -25,6 +25,9 @@ public class ItemService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private BidService bidService;
+
     public List<Category> getAllCategories() {
         return categoryRepository.findAll(); // Supports GET /api/categories
     }
@@ -66,7 +69,14 @@ public class ItemService {
     }
 
     public Optional<Item> findById(Long id) {
-        return itemRepository.findById(id);
+        return itemRepository.findById(id).map(item -> {
+            item.setLastBids(bidService.getLastBids(item));
+            return item;
+        });
+    }
+
+    public Item save(Item item) {
+        return itemRepository.save(item);
     }
 
     public List<Item> findAll() {

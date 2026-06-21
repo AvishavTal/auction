@@ -10,6 +10,18 @@ services:
     ports:
       - "5432:5432"
 
+  activemq:
+    image: apache/activemq-classic:latest
+    ports:
+      - "61616:61616"   # JMS broker
+      - "8161:8161"     # ActiveMQ web console (admin/admin)
+
+  mailhog:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"     # SMTP
+      - "8025:8025"     # Web UI - view emails here
+
   app:
     build: .
     ports:
@@ -20,10 +32,15 @@ services:
       SPRING_DATASOURCE_PASSWORD: apppass
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       UPLOAD_DIR: /app/uploads
+      SPRING_ACTIVEMQ_BROKER_URL: tcp://activemq:61616
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
     volumes:
       - uploads:/app/uploads
     depends_on:
       - db
+      - activemq
+      - mailhog
 
 volumes:
   db_data:

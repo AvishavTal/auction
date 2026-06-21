@@ -1,4 +1,4 @@
-import { injectNavbar } from '../../shared/js/layout.js';
+import { injectNavbar, requireLogin } from '../../shared/js/layout.js';
 import { getCategories, uploadImage, createItem } from '../../shared/js/api.js';
 
 const form = document.getElementById('publishItemForm');
@@ -15,6 +15,7 @@ function showStatus(text, isError = false) {
 }
 
 async function initialize() {
+    if (!requireLogin()) return;
     await injectNavbar();
 
     try {
@@ -51,7 +52,7 @@ async function handleFormSubmit(event) {
             title: document.getElementById('title').value,
             description: document.getElementById('description').value,
             startingPrice: parseFloat(document.getElementById('startingPrice').value),
-            endTime: new Date(document.getElementById('endTime').value).toISOString(),
+            endTime: document.getElementById('endTime').value,
             category: { id: parseInt(categorySelect.value, 10) },
             images: [
                 { imageUrl: uploadedImagePath }

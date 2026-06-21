@@ -1,8 +1,9 @@
 # /// script
-# dependencies = ["requests"]
+# dependencies = ["requests", "Pillow"]
 # ///
 
 import requests
+from PIL import Image, ImageDraw, ImageFont
 import random
 from datetime import datetime, timedelta
 
@@ -81,16 +82,31 @@ descriptions = [
 ]
 
 
-def upload_image(keyword, index):
-    # Download a placeholder image from picsum (stable, no auth needed)
-    image_response = requests.get(f"https://picsum.photos/seed/{index}/400/300", timeout=15)
-    image_response.raise_for_status()
+COLORS = ["#4A90D9","#E67E22","#2ECC71","#9B59B6","#E74C3C","#1ABC9C","#F39C12","#3498DB"]
+
+def make_placeholder_image(title, index):
+    color = COLORS[index % len(COLORS)]
+    img = Image.new("RGB", (400, 300), color)
+    draw = ImageDraw.Draw(img)
+    try:
+        font = ImageFont.truetype("/System/Library/Fonts/SFHebrew.ttf", 28)
+    except Exception:
+        font = ImageFont.load_default()
+    # Reverse for RTL display
+    draw.text((200, 130), title[::-1], fill="white", font=font, anchor="mm")
+    path = f"/tmp/seed_item_{index}.jpg"
+    img.save(path, "JPEG")
+    return path
+
+def upload_image(keyword, index, title):
+    img_path = make_placeholder_image(title, index)
 
     # Upload to our backend
-    upload_response = requests.post(
-        f"{BASE_URL}/media/upload",
-        files={"file": (f"item_{index}.jpg", image_response.content, "image/jpeg")}
-    )
+    with open(img_path, "rb") as f:
+        upload_response = requests.post(
+            f"{BASE_URL}/media/upload",
+            files={"file": (f"item_{index}.jpg", f, "image/jpeg")}
+        )
     upload_response.raise_for_status()
     return upload_response.json()["imagePath"]
 
@@ -115,7 +131,7 @@ for i, item in enumerate(items):
     end_time = datetime.now() + timedelta(days=random.randint(1, 30))
 
     try:
-        image_path = upload_image(item["keyword"], index)
+        image_path = upload_image(item["keyword"], index, item["title"])
         create_item(item, image_path, description, price, end_time)
         print(f"[{index}/50] ✓ {item['title']}")
     except Exception as e:

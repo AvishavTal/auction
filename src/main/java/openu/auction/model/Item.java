@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "ITEMS")
@@ -29,7 +30,14 @@ public class Item {
     @Version
     private Integer version; // Optimistic Locking
 
+    private Double currentPrice;
+    private Long winnerId;
+    private String status = "ACTIVE";
+
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<ItemImage> images;
+
+    @Transient
+    private List<Map<String, Object>> lastBids;
 }

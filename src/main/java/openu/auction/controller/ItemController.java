@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -33,6 +35,16 @@ public class ItemController {
     public ResponseEntity<Item> getItemById(@PathVariable Long id) {
         return itemService.findById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build()); // Returns 404 if ID doesn't exist
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // DEV ONLY: fast-forward item end time to 10 seconds from now
+    @PostMapping("/items/{id}/expire-now")
+    public ResponseEntity<?> expireNow(@PathVariable Long id) {
+        return itemService.findById(id).map(item -> {
+            item.setEndTime(LocalDateTime.now().plusSeconds(10));
+            itemService.save(item);
+            return ResponseEntity.ok("Item " + id + " will expire in 10 seconds");
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

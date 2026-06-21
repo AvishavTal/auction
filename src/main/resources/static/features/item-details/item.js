@@ -1,4 +1,4 @@
-import { injectNavbar } from '../../shared/js/layout.js';
+import { injectNavbar, requireLogin } from '../../shared/js/layout.js';
 import { getItemById, placeBid, getImageUrl } from '../../shared/js/api.js';
 
 const uiMessage = document.getElementById('uiMessage');
@@ -68,7 +68,7 @@ function renderProduct(item) {
             <tr>
                 <td>${bid.username}</td>
                 <td>${bid.amount.toLocaleString()} ש"ח ${bid.isProxy ? '(אוטומטי)' : ''}</td>
-                <td>${new Date(bid.bidTime).toLocaleTimeString()}</td>
+                <td>${new Date(bid.bidTime).toLocaleString('he-IL')}</td>
             </tr>
         `).join('');
     } else {
@@ -78,6 +78,7 @@ function renderProduct(item) {
 
 async function onBidSubmit(event) {
     event.preventDefault();
+    if (!requireLogin()) return;
 
     const manualAmount = parseFloat(document.getElementById('manualAmount').value);
     const proxyAmount = parseFloat(document.getElementById('proxyAmount').value);
@@ -91,15 +92,17 @@ async function onBidSubmit(event) {
     submitBidBtn.textContent = 'מעבד הצעה...';
 
     try {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         const bidData = {
             itemId: currentItem.id,
-            amount: manualAmount || 0,
+            userId: currentUser.id,
+            amount: manualAmount || null,
             maxProxyAmount: proxyAmount || null
         };
 
         await placeBid(bidData);
         showStatus('ההצעה התקבלה בהצלחה!');
-        setTimeout(() => window.location.reload(), 1500);
+        setTimeout(() => window.location.reload(), 500);
 
     } catch (err) {
         console.error('Bidding error:', err);
@@ -126,6 +129,10 @@ async function init() {
         updateTimer(currentItem.endTime);
         countdownInterval = setInterval(() => updateTimer(currentItem.endTime), 1000);
 
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            submitBidBtn.disabled = true;
+            submitBidBtn.textContent = 'יש להתחבר כדי להציע מחיר';
+        }
     } catch (err) {
         console.error('Init failure:', err);
         showStatus('טעינת המוצר נכשלה. וודא שהשרת פועל.', true);
