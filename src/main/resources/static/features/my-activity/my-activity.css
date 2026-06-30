@@ -1,0 +1,102 @@
+.activity-layout {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 20px;
+    background: white;
+}
+
+.section-header {
+    border-bottom: 2px solid var(--primary-black);
+    margin-bottom: 25px;
+}
+
+/* Tabs Architecture */
+.activity-tabs {
+    display: flex;
+    gap: 10px;
+    border-bottom: 2px solid var(--primary-black);
+    margin-bottom: 30px;
+}
+
+.activity-tabs .tab-btn {
+    padding: 12px 24px;
+    background: #f4f4f4;
+    border: 1px solid var(--border-gray);
+    border-bottom: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.activity-tabs .tab-btn.active {
+    background: var(--primary-black);
+    color: white;
+    border-color: var(--primary-black);
+}
+
+/* Grid & List Styles */
+.activity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.no-activity-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    background: #f9f9f9;
+    border: 1px dashed var(--border-gray);
+    font-size: 1.1rem;
+}
+
+/* Minimalist Custom Activity Card Layout */
+.activity-card {
+    border: 2px solid var(--primary-black);
+    padding: 20px;
+    background: white;
+    box-shadow: 6px 6px 0px var(--border-gray);
+    display: flex;
+    flex-direction: column;
+}
+
+.activity-card h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.activity-card p {
+    margin: 8px 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.status-badge.active { background: #e3f2fd; color: #0d47a1; }
+.status-badge.closed { background: #ffebee; color: #c62828; }
+.status-badge.winning { background: #e8f5e9; color: #2e7d32; }
+
+.btn-action-link {
+    margin-top: auto;
+    padding: 10px;
+    background: white;
+    border: 1px solid var(--primary-black);
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    color: black;
+}
+.btn-action-link:hover {
+    background: #f4f4f4;
+}
