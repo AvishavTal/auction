@@ -5,12 +5,12 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AuctionNotificationProducer {
+public class ProxyBiddingProducer {
 
     @Autowired
     private JmsTemplate jmsTemplate;
 
-    public void sendNotification(NotificationEvent event) {
-        jmsTemplate.convertAndSend("auction.notify", event);
+    public void triggerProxyResolution(Long itemId) {
+        jmsTemplate.convertAndSend("auction.proxy", itemId);
     }
 }

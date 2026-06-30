@@ -1,6 +1,8 @@
 package openu.auction.controller;
 
 import openu.auction.model.*;
+import openu.auction.repository.BidRepository;
+import openu.auction.repository.ItemRepository;
 import openu.auction.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,7 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/")
@@ -16,6 +19,12 @@ public class ItemController {
 
     @Autowired
     private ItemService itemService;
+
+    @Autowired
+    private ItemRepository itemRepository;
+
+    @Autowired
+    private BidRepository bidRepository;
 
     @PostMapping("/items")
     public ResponseEntity<Item> createItem(@RequestBody Item item) {
@@ -36,6 +45,25 @@ public class ItemController {
         return itemService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    // GET /api/activity?userId=X — returns bids/sales/wins for the My Activity page
+    @GetMapping("/activity")
+    public Map<String, List<Item>> getActivity(@RequestParam Long userId) {
+        // Items the user bid on
+        List<Item> bidItems = bidRepository.findByUserIdOrderByBidTimeDesc(userId)
+                .stream()
+                .map(bid -> bid.getItem())
+                .distinct()
+                .collect(Collectors.toList());
+
+        // Items the user published
+        List<Item> saleItems = itemRepository.findBySellerId(userId);
+
+        // Items the user won
+        List<Item> winItems = itemRepository.findByWinnerId(userId);
+
+        return Map.of("bids", bidItems, "sales", saleItems, "wins", winItems);
     }
 
     // DEV ONLY: fast-forward item end time to 10 seconds from now

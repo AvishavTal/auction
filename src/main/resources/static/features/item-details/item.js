@@ -102,7 +102,7 @@ async function onBidSubmit(event) {
 
         await placeBid(bidData);
         showStatus('ההצעה התקבלה בהצלחה!');
-        setTimeout(() => window.location.reload(), 500);
+        setTimeout(() => window.location.reload(), 1500); // wait for proxy resolution via JMS
 
     } catch (err) {
         console.error('Bidding error:', err);

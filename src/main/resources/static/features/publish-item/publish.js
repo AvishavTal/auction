@@ -48,11 +48,13 @@ async function handleFormSubmit(event) {
         const uploadedImagePath = uploadResponse.imagePath;
 
         // Step 2: Build the payload exactly as the API expects
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         const payload = {
             title: document.getElementById('title').value,
             description: document.getElementById('description').value,
             startingPrice: parseFloat(document.getElementById('startingPrice').value),
             endTime: document.getElementById('endTime').value,
+            sellerId: currentUser?.id,
             category: { id: parseInt(categorySelect.value, 10) },
             images: [
                 { imageUrl: uploadedImagePath }

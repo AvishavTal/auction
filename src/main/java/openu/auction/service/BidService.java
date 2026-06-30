@@ -1,5 +1,6 @@
 package openu.auction.service;
 
+import openu.auction.auction.ProxyBiddingProducer;
 import openu.auction.model.Bid;
 import openu.auction.model.Item;
 import openu.auction.repository.BidRepository;
@@ -8,6 +9,8 @@ import openu.auction.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +27,9 @@ public class BidService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ProxyBiddingProducer proxyBiddingProducer;
 
     @Transactional
     public Bid placeBid(Long itemId, Long userId, Double amount, Double maxProxyAmount) {
@@ -63,8 +69,17 @@ public class BidService {
         }
 
         itemRepository.save(item);
+        Bid saved = bidRepository.save(bid);
 
-        return bidRepository.save(bid);
+        // Send JMS after commit so the consumer reads fresh data
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                proxyBiddingProducer.triggerProxyResolution(itemId);
+            }
+        });
+
+        return saved;
     }
 
     public List<Map<String, Object>> getLastBids(Item item) {

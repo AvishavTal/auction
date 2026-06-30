@@ -46,6 +46,12 @@ export async function getItemById(id) {
     return response.json();
 }
 
+export async function getActivity(userId) {
+    const response = await fetch(`${API_BASE_URL}/activity?userId=${userId}`);
+    if (!response.ok) throw new Error(`Activity fetch failed: ${response.status}`);
+    return response.json();
+}
+
 export async function placeBid(bidData) {
     const response = await fetch(`${API_BASE_URL}/bids`, {
         method: 'POST',

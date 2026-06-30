@@ -11,4 +11,6 @@ import java.util.List;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificationExecutor<Item> {
     List<Item> findByStatusAndEndTimeBefore(String status, LocalDateTime time);
+    List<Item> findBySellerId(Long sellerId);
+    List<Item> findByWinnerId(Long winnerId);
 }

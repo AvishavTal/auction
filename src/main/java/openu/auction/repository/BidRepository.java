@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface BidRepository extends JpaRepository<Bid, Long> {
     List<Bid> findTop5ByItemOrderByBidTimeDesc(Item item);
+    List<Bid> findByUserIdOrderByBidTimeDesc(Long userId);
+    List<Bid> findByItem(Item item);
 }
