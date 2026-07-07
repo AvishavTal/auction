@@ -95,3 +95,28 @@
 .bids-table th {
     background-color: #f8f8f8;
 }
+
+/* Watchlist Button Styling */
+.btn-watchlist {
+    margin-top: 15px;
+    padding: 12px 20px;
+    background-color: white;
+    color: #000000;
+    border: 2px dashed #000000;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.btn-watchlist:hover {
+    background-color: #f9f9f9;
+}
+
+/* State modification when item is actively watched */
+.btn-watchlist.watching {
+    background-color: #fffde7;
+    border: 2px solid #000000;
+}

@@ -1,105 +1,136 @@
-import { injectNavbar, requireLogin } from '../../shared/js/layout.js';
-import { getActivity } from '../../shared/js/api.js';
+import { injectNavbar } from '../../shared/js/layout.js';
+import { getItems } from '../../shared/js/api.js';
+
+/**
+ * Logic for Screen 5: Multi-Tab Dashboard Tracker including Watchlist Filters
+ * All comments are strictly in English.
+ */
 
 const activityGrid = document.getElementById('activityGrid');
 const tabBids = document.getElementById('tabBids');
 const tabSales = document.getElementById('tabSales');
 const tabWins = document.getElementById('tabWins');
+const tabWatchlist = document.getElementById('tabWatchlist');
 
-let activityData = { bids: [], sales: [], wins: [] };
+let allItems = [];
 let currentActiveTab = 'bids';
 
-function switchTab(tabKey, activeBtn, inactiveBtn1, inactiveBtn2) {
+/**
+ * Dictates view switching pipeline states and highlights the active button link
+ */
+function switchTab(tabKey, activeBtn, inactive1, inactive2, inactive3) {
     currentActiveTab = tabKey;
     activeBtn.classList.add('active');
-    inactiveBtn1.classList.remove('active');
-    inactiveBtn2.classList.remove('active');
+    [inactive1, inactive2, inactive3].forEach(btn => btn.classList.remove('active'));
     renderActivityView();
 }
 
-function itemCard(item, bodyHtml, badgeClass, badgeText, linkText) {
-    const isClosed = new Date(item.endTime) < new Date();
-    return `
-        <div class="activity-card">
-            <h3>${item.title}</h3>
-            ${bodyHtml}
-            <span class="status-badge ${badgeClass}">${badgeText}</span>
-            <a href="../item-details/index.html?id=${item.id}" class="btn-action-link">${linkText}</a>
-        </div>
-    `;
-}
-
+/**
+ * Renders filtered grids maps matching selected state criteria
+ */
 function renderActivityView() {
     activityGrid.innerHTML = '';
     const now = new Date();
+    let itemsToRender = [];
 
     if (currentActiveTab === 'bids') {
-        const items = activityData.bids;
-        if (items.length === 0) {
+        itemsToRender = allItems.filter(item => localStorage.getItem(`mock_bids_${item.id}`));
+        if (itemsToRender.length === 0) {
             activityGrid.innerHTML = `<p class="no-activity-message">טרם הגשת הצעות מחיר במערכת.</p>`;
             return;
         }
-        activityGrid.innerHTML = items.map(item => {
+        activityGrid.innerHTML = itemsToRender.map(item => {
+            const localBids = JSON.parse(localStorage.getItem(`mock_bids_${item.id}`)) || [];
+            const myHighestBid = localBids[0]?.amount || 0;
             const isClosed = new Date(item.endTime) < now;
-            const price = item.currentPrice ? item.currentPrice.toLocaleString() : item.startingPrice.toLocaleString();
-            return itemCard(item,
-                `<p>מחיר שוק נוכחי: <strong>${price} ש"ח</strong></p>`,
-                isClosed ? 'closed' : 'active',
-                isClosed ? 'המכרז נסגר' : 'מכרז פעיל',
-                'עבור לדף פריט'
-            );
+            return `
+                <div class="activity-card">
+                    <h3>${item.title}</h3>
+                    <p>ההצעה האחרונה שלך: <strong>${myHighestBid.toLocaleString()} ש"ח</strong></p>
+                    <p>מחיר שוק נוכחי: ${(item.currentPrice || item.startingPrice).toLocaleString()} ש"ח</p>
+                    <span class="status-badge ${isClosed ? 'closed' : 'active'}">${isClosed ? 'המכרז נסגר' : 'מכרז פעיל'}</span>
+                    <a href="../item-details/index.html?id=${item.id}" class="btn-action-link">עבור לדף פריט</a>
+                </div>
+            `;
         }).join('');
 
     } else if (currentActiveTab === 'sales') {
-        const items = activityData.sales;
-        if (items.length === 0) {
-            activityGrid.innerHTML = `<p class="no-activity-message">טרם פרסמת מוצרים למכירה במערכת.</p>`;
+        itemsToRender = allItems.filter(item => item.sellerId === null || item.sellerId === 1);
+        if (itemsToRender.length === 0) {
+            activityGrid.innerHTML = `<p class="no-activity-message">טרם פרסמת מוצרים למכירה.</p>`;
             return;
         }
-        activityGrid.innerHTML = items.map(item => {
+        activityGrid.innerHTML = itemsToRender.map(item => {
             const isClosed = new Date(item.endTime) < now;
-            const current = item.currentPrice ? `${item.currentPrice.toLocaleString()} ש"ח` : 'אין הצעות';
-            return itemCard(item,
-                `<p>מחיר פתיחה: ${item.startingPrice.toLocaleString()} ש"ח</p>
-                 <p>מחיר נוכחי: ${current}</p>`,
-                isClosed ? 'closed' : 'active',
-                isClosed ? 'המכרז נסגר' : 'מכרז פעיל',
-                'נהל מכירה'
-            );
+            return `
+                <div class="activity-card">
+                    <h3>${item.title}</h3>
+                    <p>מחיר פתיחה: ${item.startingPrice.toLocaleString()} ש"ח</p>
+                    <p>מחיר נוכחי: ${item.currentPrice ? item.currentPrice.toLocaleString() : 'אין הצעות'} ש"ח</p>
+                    <span class="status-badge ${isClosed ? 'closed' : 'active'}">${isClosed ? 'המכרז נסגר' : 'מכרז פעיל'}</span>
+                    <a href="../item-details/index.html?id=${item.id}" class="btn-action-link">נהל מכירה</a>
+                </div>
+            `;
         }).join('');
 
     } else if (currentActiveTab === 'wins') {
-        const items = activityData.wins;
-        if (items.length === 0) {
-            activityGrid.innerHTML = `<p class="no-activity-message">אין זכיות רשומות כרגע. המשך להציע במכרזים!</p>`;
+        itemsToRender = allItems.filter(item => {
+            const isClosed = new Date(item.endTime) < now;
+            if (!isClosed) return false;
+            const localBids = JSON.parse(localStorage.getItem(`mock_bids_${item.id}`)) || [];
+            if (localBids.length === 0) return false;
+            return localBids[0].amount >= (item.currentPrice || item.startingPrice);
+        });
+        if (itemsToRender.length === 0) {
+            activityGrid.innerHTML = `<p class="no-activity-message">אין זכיות רשומות כרגע.</p>`;
             return;
         }
-        activityGrid.innerHTML = items.map(item => {
-            const price = (item.currentPrice || item.startingPrice).toLocaleString();
-            return itemCard(item,
-                `<p>מחיר זכייה סופי: <strong>${price} ש"ח</strong></p>`,
-                'winning',
-                'זכית במוצר! 🎉',
-                'פרטי יצירת קשר עם המוכר'
-            );
+        activityGrid.innerHTML = itemsToRender.map(item => `
+            <div class="activity-card">
+                <h3>${item.title}</h3>
+                <p>מחיר זכייה סופי: <strong>${(item.currentPrice || item.startingPrice).toLocaleString()} ש"ח</strong></p>
+                <span class="status-badge winning">זכית במוצר! 🎉</span>
+                <a href="../item-details/index.html?id=${item.id}" class="btn-action-link">פרטי יצירת קשר</a>
+            </div>
+        `).join('');
+
+    } else if (currentActiveTab === 'watchlist') {
+        // Pull string IDs from localStorage tracking vectors
+        const watchlist = JSON.parse(localStorage.getItem('user_watchlist')) || [];
+        itemsToRender = allItems.filter(item => watchlist.includes(String(item.id)));
+
+        if (itemsToRender.length === 0) {
+            activityGrid.innerHTML = `<p class="no-activity-message">אין מוצרים ברשימת המעקב שלך.</p>`;
+            return;
+        }
+        activityGrid.innerHTML = itemsToRender.map(item => {
+            const isClosed = new Date(item.endTime) < now;
+            return `
+                <div class="activity-card">
+                    <h3>${item.title}</h3>
+                    <p>מחיר נוכחי: ${(item.currentPrice || item.startingPrice).toLocaleString()} ש"ח</p>
+                    <span class="status-badge ${isClosed ? 'closed' : 'active'}">${isClosed ? 'המכרז נסגר' : 'מכרז פעיל'}</span>
+                    <a href="../item-details/index.html?id=${item.id}" class="btn-action-link">צפה במוצר וקנה</a>
+                </div>
+            `;
         }).join('');
     }
 }
 
 async function init() {
-    if (!requireLogin()) return;
     await injectNavbar();
 
-    tabBids.addEventListener('click', () => switchTab('bids', tabBids, tabSales, tabWins));
-    tabSales.addEventListener('click', () => switchTab('sales', tabSales, tabBids, tabWins));
-    tabWins.addEventListener('click', () => switchTab('wins', tabWins, tabBids, tabSales));
+    // Map strategic event bindings
+    tabBids.addEventListener('click', () => switchTab('bids', tabBids, tabSales, tabWins, tabWatchlist));
+    tabSales.addEventListener('click', () => switchTab('sales', tabSales, tabBids, tabWins, tabWatchlist));
+    tabWins.addEventListener('click', () => switchTab('wins', tabWins, tabBids, tabSales, tabWatchlist));
+    tabWatchlist.addEventListener('click', () => switchTab('watchlist', tabWatchlist, tabBids, tabSales, tabWins));
 
     try {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        activityData = await getActivity(currentUser.id);
+        allItems = await getItems();
         renderActivityView();
     } catch (err) {
-        console.error('Failed to load activity:', err);
+        console.error('Data stream synchronization loading error:', err);
         activityGrid.innerHTML = `<p class="no-activity-message">שגיאה בטעינת נתונים. וודא ששרת ה-Java פועל.</p>`;
     }
 }
