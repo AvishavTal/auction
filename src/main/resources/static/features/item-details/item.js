@@ -3,11 +3,9 @@ import { getItemById, placeBid, getImageUrl } from '../../shared/js/api.js';
 
 /**
  * Logic for Screen 3: Item Details, Bidding, and Watchlist Flows
- * Intersects simulated client configurations with backend endpoints seamlessly.
- * All comments are strictly in English.
+ * Reverted to standard default browser input configurations. All comments are strictly in English.
  */
 
-// UI Elements
 const uiMessage = document.getElementById('uiMessage');
 const submitBidBtn = document.getElementById('submitBidBtn');
 const bidForm = document.getElementById('bidForm');
@@ -46,9 +44,6 @@ function updateTimer(endTimeStr) {
     timerDisplay.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-/**
- * Manages UI display text and styles depending on the local storage watchlist state
- */
 function renderWatchlistButton(itemId) {
     const watchlist = JSON.parse(localStorage.getItem('user_watchlist')) || [];
     const isWatched = watchlist.includes(String(itemId));
@@ -62,9 +57,6 @@ function renderWatchlistButton(itemId) {
     }
 }
 
-/**
- * Toggles the targeted item ID state within localStorage arrays
- */
 function handleWatchlistToggle() {
     if (!currentItem) return;
     let watchlist = JSON.parse(localStorage.getItem('user_watchlist')) || [];

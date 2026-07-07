@@ -45,11 +45,11 @@
                 <div class="input-row">
                     <div class="input-group">
                         <label for="manualAmount">סכום הצעה ידנית:</label>
-                        <input type="number" id="manualAmount" step="0.01">
+                        <input type="number" id="manualAmount" min="0" step="1">
                     </div>
                     <div class="input-group">
                         <label for="proxyAmount">מקסימום להצעה אוטומטית (Proxy):</label>
-                        <input type="number" id="proxyAmount" step="0.01">
+                        <input type="number" id="proxyAmount" min="0" step="1">
                     </div>
                 </div>
                 <button type="submit" id="submitBidBtn" class="btn-bid">בצע הצעה</button>
