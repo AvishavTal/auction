@@ -3,7 +3,6 @@ import { getItems } from '../../shared/js/api.js';
 
 /**
  * Logic for Screen 5: Multi-Tab Dashboard Tracker including Watchlist Filters
- * All comments are strictly in English.
  */
 
 const activityGrid = document.getElementById('activityGrid');

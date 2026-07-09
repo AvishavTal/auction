@@ -3,7 +3,7 @@ import { getItemById, placeBid, getImageUrl } from '../../shared/js/api.js';
 
 /**
  * Logic for Screen 3: Item Details, Bidding, and Watchlist Flows
- * Reverted to standard default browser input configurations. All comments are strictly in English.
+ * Reverted to standard default browser input configurations.
  */
 
 const uiMessage = document.getElementById('uiMessage');
