@@ -1,9 +1,6 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
-export function getImageUrl(filename) {
-    if (!filename) return '../../shared/components/placeholder.png';
-    return `${API_BASE_URL}/media/${filename}`;
-}
+
 
 export async function getCategories() {
     const response = await fetch(`${API_BASE_URL}/categories`);
@@ -11,13 +8,20 @@ export async function getCategories() {
     return response.json();
 }
 
+export function getImageUrl(filename) {
+    if (!filename) return '../../shared/components/placeholder.png';
+    return `${API_BASE_URL}/media/${filename}`;
+}
+
 export async function uploadImage(file) {
     const formData = new FormData();
     formData.append('file', file);
+    
     const response = await fetch(`${API_BASE_URL}/media/upload`, {
         method: 'POST',
         body: formData
     });
+    
     if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
     return response.json();
 }
@@ -46,11 +50,13 @@ export async function getItemById(id) {
     return response.json();
 }
 
+
 export async function getActivity(userId) {
     const response = await fetch(`${API_BASE_URL}/activity?userId=${userId}`);
     if (!response.ok) throw new Error(`Activity fetch failed: ${response.status}`);
     return response.json();
 }
+
 
 export async function placeBid(bidData) {
     const response = await fetch(`${API_BASE_URL}/bids`, {
@@ -58,9 +64,10 @@ export async function placeBid(bidData) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bidData)
     });
+    
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Bid submission failed');
+        throw new Error(`Bid submission failed with status: ${response.status}`);
     }
+    
     return response.json();
 }
