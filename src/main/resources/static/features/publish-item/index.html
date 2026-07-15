@@ -42,8 +42,16 @@
 
                 <div class="row">
                     <div class="col form-group">
-                        <label for="endTime">תאריך ושעת סיום:</label>
-                        <input type="datetime-local" id="endTime" required>
+                        <label>מועד סיום המכרז:</label>
+                        <div class="datetime-split-container">
+                            <input type="date" id="endDate" required title="בחר תאריך סיום">
+                            
+                            <div class="time-picker-select-group">
+                                <select id="endHour" required title="בחר שעה"></select>
+                                <span class="time-colon">:</span>
+                                <select id="endMinute" required title="בחר דקות"></select>
+                            </div>
+                        </div>
                     </div>
                     <div class="col form-group">
                         <label for="startingPrice">מחיר התחלתי (ש"ח):</label>

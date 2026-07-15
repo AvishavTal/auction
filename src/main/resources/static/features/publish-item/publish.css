@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Publish Item Layout Architecture (Screen 4).
+ * Handles flexible grid layouts and localized cross-browser input styling.
+ */
+
 .main-content {
     display: flex;
     justify-content: center;
@@ -33,7 +38,7 @@ label {
 
 input[type="text"], 
 input[type="number"], 
-input[type="datetime-local"], 
+input[type="date"],
 select, 
 textarea {
     width: 100%;
@@ -41,6 +46,46 @@ textarea {
     border: 1px solid var(--border-gray);
     box-sizing: border-box;
     font-family: inherit;
+}
+
+/* Enforce clickable pointer for date and time inputs */
+input[type="date"],
+.time-picker-select-group select {
+    cursor: pointer;
+}
+
+/* Split layout to render Date and Time inline on the same block */
+.datetime-split-container {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    align-items: center;
+}
+
+.datetime-split-container input[type="date"] {
+    flex: 1.5; /* Date gets more visual space */
+}
+
+/* Custom time selection group layout */
+.time-picker-select-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.time-picker-select-group select {
+    padding: 8px;
+    border: 1px solid var(--border-gray);
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.time-colon {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--primary-black);
+    user-select: none;
 }
 
 textarea {
@@ -96,4 +141,24 @@ input[type="file"] {
     color: var(--primary-black);
     border: 1px solid var(--primary-black);
     flex: 1;
+}
+
+.ui-message {
+    padding: 12px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    display: none;
+    border: 1px solid transparent;
+}
+
+.ui-message.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-color: #a5d6a7;
+}
+
+.ui-message.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border-color: #ef9a9a;
 }
