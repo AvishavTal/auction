@@ -2,8 +2,9 @@ import { injectNavbar } from '../../shared/js/layout.js';
 
 /**
  * @fileoverview My Activity Controller Module (Screen 5).
- * Precision synced with project architecture styles (.activity-card, #activityGrid).
- * Embedded with deterministic URI safety layers to block loop feedback.
+ * Coordinates data state binding and UI orchestration.
+ * Preserves the active tab state across page refreshes using sessionStorage.
+ * @requires ../../shared/js/layout.js:injectNavbar
  */
 
 const API_BASE_URL = 'http://localhost:8080/api';
@@ -16,7 +17,7 @@ let activityCache = {
     watchlist: []
 };
 
-// Explicit DOM target links matching your index.html
+// Explicit DOM target links matching index.html
 let activityGridContainer = null;
 let tabButtons = [];
 
@@ -62,15 +63,12 @@ function formatDateString(dateString) {
 
 /**
  * Generates card structures compiled using your exact CSS rules (.activity-card).
- * Employs a strict validation pattern to ensure infinite 404 rendering states are impossible.
  */
 function createItemCardHTML(item, tabContext) {
-    // 100% immune from network asset missing failures
     const secureBase64Fallback = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
     
-    // Fallback detection logic
-    const hasValidImage = item.images && item.images.length > 0 && item.images[0].imageUrl;
-    const imageUrl = hasValidImage ? item.images[0].imageUrl : secureBase64Fallback;
+    const hasImage = item.images && item.images.length > 0 && item.images[0].imageUrl;
+    const imageUrl = hasImage ? item.images[0].imageUrl : secureBase64Fallback;
     const resolvedPrice = item.currentPrice !== undefined ? item.currentPrice : item.startingPrice;
 
     let badgeClass = 'active';
@@ -88,7 +86,7 @@ function createItemCardHTML(item, tabContext) {
         <div class="activity-card" data-id="${item.id}">
             <h3>${item.title || 'מוצר ללא כותרת'}</h3>
             
-            ${hasValidImage ? `
+            ${hasImage ? `
             <div class="card-image-wrapper" style="height: 120px; text-align: center; margin-bottom: 10px;">
                 <img src="${imageUrl}" alt="Product image" style="max-height: 100%; max-width: 100%; object-fit: contain;"
                      onerror="this.onerror=null; this.src='${secureBase64Fallback}';">
@@ -123,13 +121,30 @@ function renderGrid(list, tabContext) {
 }
 
 /**
- * Maps triggers directly onto button identities specified inside your index.html
+ * Checks sessionStorage for a previously active tab and restores its visual active state.
+ */
+function restoreActiveTab() {
+    const savedTabId = sessionStorage.getItem('activeActivityTab');
+    if (savedTabId) {
+        const targetTab = document.getElementById(savedTabId);
+        if (targetTab) {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            targetTab.classList.add('active');
+        }
+    }
+}
+
+/**
+ * Maps triggers directly onto button identities and caches the active state in sessionStorage.
  */
 function bindTabNavigation() {
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
+
+            // Save the clicked tab's ID to sessionStorage
+            sessionStorage.setItem('activeActivityTab', button.id);
 
             let targetKey = 'bids';
             if (button.id === 'tabSales') targetKey = 'sales';
@@ -171,7 +186,7 @@ async function fetchUserActivityData() {
         
         loadLocalWatchlist();
 
-        // Discover and fall onto whichever button has the 'active' class on page load
+        // Discover whichever button has the 'active' class (this accounts for the restored tab!)
         const activeTab = document.querySelector('.activity-tabs .tab-btn.active');
         let initialKey = 'bids';
         if (activeTab) {
@@ -201,7 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
     activityGridContainer = document.getElementById('activityGrid');
     tabButtons = document.querySelectorAll('.activity-tabs .tab-btn');
 
+    restoreActiveTab(); // 1. Restore the visually active tab from sessionStorage
     injectNavbar();
-    bindTabNavigation();
-    fetchUserActivityData();
+    bindTabNavigation(); // 2. Bind click events which write to sessionStorage
+    fetchUserActivityData(); // 3. Fetch and render based on the current active tab
 });
