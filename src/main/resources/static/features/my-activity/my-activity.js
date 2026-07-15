@@ -1,10 +1,13 @@
 import { injectNavbar } from '../../shared/js/layout.js';
+import { getImageUrl } from '../../shared/js/api.js'; // <-- התיקון: מייבאים את מתרגם הכתובות של שי
 
 /**
  * @fileoverview My Activity Controller Module (Screen 5).
  * Coordinates data state binding and UI orchestration.
  * Preserves the active tab state across page refreshes using sessionStorage.
+ * Correctly parses relative backend image paths using getImageUrl.
  * @requires ../../shared/js/layout.js:injectNavbar
+ * @requires ../../shared/js/api.js:getImageUrl
  */
 
 const API_BASE_URL = 'http://localhost:8080/api';
@@ -68,7 +71,8 @@ function createItemCardHTML(item, tabContext) {
     const secureBase64Fallback = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
     
     const hasImage = item.images && item.images.length > 0 && item.images[0].imageUrl;
-    const imageUrl = hasImage ? item.images[0].imageUrl : secureBase64Fallback;
+    // התיקון: מעבירים את הכתובת בתוך getImageUrl בדיוק כמו בדף המוצר!
+    const imageUrl = hasImage ? getImageUrl(item.images[0].imageUrl) : secureBase64Fallback;
     const resolvedPrice = item.currentPrice !== undefined ? item.currentPrice : item.startingPrice;
 
     let badgeClass = 'active';
