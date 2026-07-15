@@ -3,9 +3,9 @@ import { getItemById, placeBid, getImageUrl } from '../../shared/js/api.js';
 
 /**
  * @fileoverview Controller module for Screen 3 (Item Details, Live Bidding, and Watchlist).
- * Coordinates UI rendering, real-time auction countdowns, client-side watchlist persistence,
- * and form submission translation to match strict backend Map structures.
- * * @requires ../../shared/js/layout.js:injectNavbar
+ * Tracks dynamic bidding transactions and synchronizes local identities dynamic contexts.
+ * Fully refactored to terminate static simulation metadata payloads securely.
+ * @requires ../../shared/js/layout.js:injectNavbar
  * @requires ../../shared/js/api.js:getItemById
  * @requires ../../shared/js/api.js:placeBid
  * @requires ../../shared/js/api.js:getImageUrl
@@ -34,7 +34,7 @@ let countdownInterval = null;
 
 /**
  * Displays status alerts or operational error messages to the end-user.
- * * @param {string} text - The informative message or error description to render.
+ * @param {string} text - The informative message or error description to render.
  * @param {boolean} [isError=false] - If true, applies error styling; otherwise applies success styling.
  * @returns {void}
  */
@@ -47,7 +47,7 @@ function showStatus(text, isError = false) {
 /**
  * Extracts the target product ID directly from the active URL query string parameters.
  * URL pattern expected: /item.html?id=XYZ
- * * @returns {string|null} The product identifier string, or null if the parameter is absent.
+ * @returns {string|null} The product identifier string, or null if the parameter is absent.
  */
 function getProductId() {
     const params = new URLSearchParams(window.location.search);
@@ -57,7 +57,7 @@ function getProductId() {
 /**
  * Calculates remaining time against the target timestamp and updates the UI countdown ticker.
  * Automatically locks the bidding interface immediately upon auction expiration.
- * * @param {string} endTimeStr - ISO 8601 compliant datetime string indicating when the auction terminates.
+ * @param {string} endTimeStr - ISO 8601 compliant datetime string indicating when the auction terminates.
  * @returns {void}
  */
 function updateTimer(endTimeStr) {
@@ -68,7 +68,7 @@ function updateTimer(endTimeStr) {
 
     if (diff <= 0) {
         timerDisplay.textContent = "המכרז נסגר";
-        submitBidBtn.disabled = true;
+        if (submitBidBtn) submitBidBtn.disabled = true;
         if (countdownInterval) {
             clearInterval(countdownInterval);
         }
@@ -83,7 +83,7 @@ function updateTimer(endTimeStr) {
 
 /**
  * Evaluates item presence in local storage watchlist and updates the visual state of the trigger button.
- * * @param {number|string} itemId - The unique identifier of the active item.
+ * @param {number|string} itemId - The unique identifier of the active item.
  * @returns {void}
  */
 function renderWatchlistButton(itemId) {
@@ -102,7 +102,7 @@ function renderWatchlistButton(itemId) {
 /**
  * Toggles the presence of the active item inside the client-side persistent watchlist array.
  * Triggered via the UI watchlist button action listener.
- * * @returns {void}
+ * @returns {void}
  */
 function handleWatchlistToggle() {
     if (!currentItem) return;
@@ -122,15 +122,7 @@ function handleWatchlistToggle() {
 
 /**
  * Binds active item metadata properties and historical bid collections onto corresponding HTML DOM elements.
- * * @param {Object} item - The active product object structure received from the API layer.
- * @param {number} item.id - Unique database identifier.
- * @param {string} item.title - Display name of the asset.
- * @param {string} item.description - Full text copy detailing product specifications.
- * @param {number} item.startingPrice - Floor valuation configured by the seller.
- * @param {number|null} item.currentPrice - Highest submitted offer recorded, or null if no offers exist.
- * @param {Array<Object>} [item.images] - List containing image path objects mapped to the entity.
- * @param {Array<Object>} [item.lastBids] - Collection of up to 5 historical bid entries.
- * @returns {void}
+ * @param {Object} item - The active product object structure received from the API layer.
  */
 function renderProduct(item) {
     const activePrice = item.currentPrice || item.startingPrice;
@@ -160,13 +152,22 @@ function renderProduct(item) {
 
 /**
  * Intercepts the form submission event, performs input data sanity checks,
- * wraps input states into flat JSON properties, and executes the backend bid transmission.
- * * @async
+ * extracts true dynamic context tokens from persistent stores, and commits transaction payloads.
+ * @async
  * @param {SubmitEvent} event - The native browser form submit event context.
- * @returns {Promise<void>} Resolves once network pipelines finish updating state machines.
+ * @returns {Promise<void>}
  */
 async function onBidSubmit(event) {
     event.preventDefault();
+
+    // 1. Session verification assertion logic
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser || !currentUser.id) {
+        showStatus('עליך להיות מחובר למערכת על מנת לבצע הצעה במכרז.', true);
+        setTimeout(() => window.location.href = '../auth/index.html', 2000);
+        return;
+    }
+
     const manualAmount = parseFloat(document.getElementById('manualAmount').value);
     const proxyAmount = parseFloat(document.getElementById('proxyAmount').value);
     const activePrice = currentItem.currentPrice || currentItem.startingPrice;
@@ -191,14 +192,12 @@ async function onBidSubmit(event) {
     try {
         /**
          * API Contract Compliance Payload Map Configuration.
-         * Explicitly optimized into a single-level flat key structure to align with 
-         * Shai's Spring Boot Map processing handler logic: payload.get("itemId").toString().
-         * Do not embed complex object sub-trees (e.g. item: {id: x}) here.
+         * Dynamically populated utilizing true session identities to correct multi-account routing failures.
          */
         const bidPayload = {
             itemId: String(currentItem.id),
-            userId: "1",
-            username: "TestUser",
+            userId: String(currentUser.id),         // Dynamic identity parsed directly from auth state context
+            username: String(currentUser.username), // Dynamic identifier parsed directly from auth state context
             amount: manualAmount || 0,
             maxProxyAmount: proxyAmount || null
         };
@@ -218,9 +217,7 @@ async function onBidSubmit(event) {
 
 /**
  * Orchestrates the full initialization sequence of Screen 3 on module insertion.
- * Mounts the layout header navigation bar, reads contextual search params, 
- * requests structural state models from Java backend, and boots up timer threads.
- * * @async
+ * @async
  * @returns {Promise<void>}
  */
 async function init() {
@@ -232,7 +229,6 @@ async function init() {
     }
 
     try {
-        // Fetch fresh production record values from backend database layers
         currentItem = await getItemById(id);
         renderProduct(currentItem);
         renderWatchlistButton(currentItem.id);
@@ -250,5 +246,9 @@ async function init() {
 // Operational Event Listeners Declarations
 // ==========================================
 document.addEventListener('DOMContentLoaded', init);
-bidForm.addEventListener('submit', onBidSubmit);
-watchlistBtn.addEventListener('click', handleWatchlistToggle);
+if (bidForm) {
+    bidForm.addEventListener('submit', onBidSubmit);
+}
+if (watchlistBtn) {
+    watchlistBtn.addEventListener('click', handleWatchlistToggle);
+}
