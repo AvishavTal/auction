@@ -1,137 +1,207 @@
 import { injectNavbar } from '../../shared/js/layout.js';
-import { getItems } from '../../shared/js/api.js';
 
 /**
- * Logic for Screen 5: Multi-Tab Dashboard Tracker including Watchlist Filters
+ * @fileoverview My Activity Controller Module (Screen 5).
+ * Precision synced with project architecture styles (.activity-card, #activityGrid).
+ * Embedded with deterministic URI safety layers to block loop feedback.
  */
 
-const activityGrid = document.getElementById('activityGrid');
-const tabBids = document.getElementById('tabBids');
-const tabSales = document.getElementById('tabSales');
-const tabWins = document.getElementById('tabWins');
-const tabWatchlist = document.getElementById('tabWatchlist');
+const API_BASE_URL = 'http://localhost:8080/api';
 
-let allItems = [];
-let currentActiveTab = 'bids';
+// In-memory runtime data structures
+let activityCache = {
+    bids: [],
+    sales: [],
+    wins: [],
+    watchlist: []
+};
+
+// Explicit DOM target links matching your index.html
+let activityGridContainer = null;
+let tabButtons = [];
 
 /**
- * Dictates view switching pipeline states and highlights the active button link
+ * Reconstructs the authenticated session metadata.
  */
-function switchTab(tabKey, activeBtn, inactive1, inactive2, inactive3) {
-    currentActiveTab = tabKey;
-    activeBtn.classList.add('active');
-    [inactive1, inactive2, inactive3].forEach(btn => btn.classList.remove('active'));
-    renderActivityView();
-}
-
-/**
- * Renders filtered grids maps matching selected state criteria
- */
-function renderActivityView() {
-    activityGrid.innerHTML = '';
-    const now = new Date();
-    let itemsToRender = [];
-
-    if (currentActiveTab === 'bids') {
-        itemsToRender = allItems.filter(item => localStorage.getItem(`mock_bids_${item.id}`));
-        if (itemsToRender.length === 0) {
-            activityGrid.innerHTML = `<p class="no-activity-message">טרם הגשת הצעות מחיר במערכת.</p>`;
-            return;
-        }
-        activityGrid.innerHTML = itemsToRender.map(item => {
-            const localBids = JSON.parse(localStorage.getItem(`mock_bids_${item.id}`)) || [];
-            const myHighestBid = localBids[0]?.amount || 0;
-            const isClosed = new Date(item.endTime) < now;
-            return `
-                <div class="activity-card">
-                    <h3>${item.title}</h3>
-                    <p>ההצעה האחרונה שלך: <strong>${myHighestBid.toLocaleString()} ש"ח</strong></p>
-                    <p>מחיר שוק נוכחי: ${(item.currentPrice || item.startingPrice).toLocaleString()} ש"ח</p>
-                    <span class="status-badge ${isClosed ? 'closed' : 'active'}">${isClosed ? 'המכרז נסגר' : 'מכרז פעיל'}</span>
-                    <a href="../item-details/index.html?id=${item.id}" class="btn-action-link">עבור לדף פריט</a>
-                </div>
-            `;
-        }).join('');
-
-    } else if (currentActiveTab === 'sales') {
-        itemsToRender = allItems.filter(item => item.sellerId === null || item.sellerId === 1);
-        if (itemsToRender.length === 0) {
-            activityGrid.innerHTML = `<p class="no-activity-message">טרם פרסמת מוצרים למכירה.</p>`;
-            return;
-        }
-        activityGrid.innerHTML = itemsToRender.map(item => {
-            const isClosed = new Date(item.endTime) < now;
-            return `
-                <div class="activity-card">
-                    <h3>${item.title}</h3>
-                    <p>מחיר פתיחה: ${item.startingPrice.toLocaleString()} ש"ח</p>
-                    <p>מחיר נוכחי: ${item.currentPrice ? item.currentPrice.toLocaleString() : 'אין הצעות'} ש"ח</p>
-                    <span class="status-badge ${isClosed ? 'closed' : 'active'}">${isClosed ? 'המכרז נסגר' : 'מכרז פעיל'}</span>
-                    <a href="../item-details/index.html?id=${item.id}" class="btn-action-link">נהל מכירה</a>
-                </div>
-            `;
-        }).join('');
-
-    } else if (currentActiveTab === 'wins') {
-        itemsToRender = allItems.filter(item => {
-            const isClosed = new Date(item.endTime) < now;
-            if (!isClosed) return false;
-            const localBids = JSON.parse(localStorage.getItem(`mock_bids_${item.id}`)) || [];
-            if (localBids.length === 0) return false;
-            return localBids[0].amount >= (item.currentPrice || item.startingPrice);
-        });
-        if (itemsToRender.length === 0) {
-            activityGrid.innerHTML = `<p class="no-activity-message">אין זכיות רשומות כרגע.</p>`;
-            return;
-        }
-        activityGrid.innerHTML = itemsToRender.map(item => `
-            <div class="activity-card">
-                <h3>${item.title}</h3>
-                <p>מחיר זכייה סופי: <strong>${(item.currentPrice || item.startingPrice).toLocaleString()} ש"ח</strong></p>
-                <span class="status-badge winning">זכית במוצר! 🎉</span>
-                <a href="../item-details/index.html?id=${item.id}" class="btn-action-link">פרטי יצירת קשר</a>
-            </div>
-        `).join('');
-
-    } else if (currentActiveTab === 'watchlist') {
-        // Pull string IDs from localStorage tracking vectors
-        const watchlist = JSON.parse(localStorage.getItem('user_watchlist')) || [];
-        itemsToRender = allItems.filter(item => watchlist.includes(String(item.id)));
-
-        if (itemsToRender.length === 0) {
-            activityGrid.innerHTML = `<p class="no-activity-message">אין מוצרים ברשימת המעקב שלך.</p>`;
-            return;
-        }
-        activityGrid.innerHTML = itemsToRender.map(item => {
-            const isClosed = new Date(item.endTime) < now;
-            return `
-                <div class="activity-card">
-                    <h3>${item.title}</h3>
-                    <p>מחיר נוכחי: ${(item.currentPrice || item.startingPrice).toLocaleString()} ש"ח</p>
-                    <span class="status-badge ${isClosed ? 'closed' : 'active'}">${isClosed ? 'המכרז נסגר' : 'מכרז פעיל'}</span>
-                    <a href="../item-details/index.html?id=${item.id}" class="btn-action-link">צפה במוצר וקנה</a>
-                </div>
-            `;
-        }).join('');
+function getAuthenticatedUser() {
+    try {
+        const session = localStorage.getItem('currentUser');
+        if (!session) return null;
+        const parsed = JSON.parse(session);
+        return parsed && parsed.id ? parsed : null;
+    } catch (error) {
+        console.error('Session Extraction Interrupted:', error);
+        return null;
     }
 }
 
-async function init() {
-    await injectNavbar();
+/**
+ * Populates peripheral watch state matrices.
+ */
+function loadLocalWatchlist() {
+    try {
+        const payload = localStorage.getItem('user_watchlist') || localStorage.getItem('watchlist') || '[]';
+        activityCache.watchlist = JSON.parse(payload);
+    } catch (error) {
+        activityCache.watchlist = [];
+    }
+}
 
-    // Map strategic event bindings
-    tabBids.addEventListener('click', () => switchTab('bids', tabBids, tabSales, tabWins, tabWatchlist));
-    tabSales.addEventListener('click', () => switchTab('sales', tabSales, tabBids, tabWins, tabWatchlist));
-    tabWins.addEventListener('click', () => switchTab('wins', tabWins, tabBids, tabSales, tabWatchlist));
-    tabWatchlist.addEventListener('click', () => switchTab('watchlist', tabWatchlist, tabBids, tabSales, tabWins));
+/**
+ * Formats data timestamps into simple display strings.
+ */
+function formatDateString(dateString) {
+    if (!dateString) return '18:15:00';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } catch (e) {
+        return '18:15:00';
+    }
+}
+
+/**
+ * Generates card structures compiled using your exact CSS rules (.activity-card).
+ * Employs a strict validation pattern to ensure infinite 404 rendering states are impossible.
+ */
+function createItemCardHTML(item, tabContext) {
+    // 100% immune from network asset missing failures
+    const secureBase64Fallback = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    
+    // Fallback detection logic
+    const hasValidImage = item.images && item.images.length > 0 && item.images[0].imageUrl;
+    const imageUrl = hasValidImage ? item.images[0].imageUrl : secureBase64Fallback;
+    const resolvedPrice = item.currentPrice !== undefined ? item.currentPrice : item.startingPrice;
+
+    let badgeClass = 'active';
+    let badgeText = 'פעיל';
+
+    if (tabContext === 'wins') {
+        badgeClass = 'winning';
+        badgeText = 'זכייה במכרז';
+    } else if (item.status === 'EXPIRED') {
+        badgeClass = 'closed';
+        badgeText = 'נסגר';
+    }
+
+    return `
+        <div class="activity-card" data-id="${item.id}">
+            <h3>${item.title || 'מוצר ללא כותרת'}</h3>
+            
+            ${hasValidImage ? `
+            <div class="card-image-wrapper" style="height: 120px; text-align: center; margin-bottom: 10px;">
+                <img src="${imageUrl}" alt="Product image" style="max-height: 100%; max-width: 100%; object-fit: contain;"
+                     onerror="this.onerror=null; this.src='${secureBase64Fallback}';">
+            </div>` : ''}
+
+            <p>מחיר: <strong>${resolvedPrice ? resolvedPrice.toLocaleString() : 0} ש"ח</strong></p>
+            <p>סיום: <span>${formatDateString(item.endTime)}</span></p>
+            
+            <span class="status-badge ${badgeClass}">${badgeText}</span>
+            
+            <a href="../item-details/index.html?id=${item.id}" class="btn-action-link">צפה בפרטים</a>
+        </div>
+    `;
+}
+
+/**
+ * Flushes the isolated container targets cleanly without blowing up external layouts.
+ */
+function renderGrid(list, tabContext) {
+    if (!activityGridContainer) return;
+
+    if (!list || list.length === 0) {
+        activityGridContainer.innerHTML = `
+            <div class="no-activity-message">
+                לא נמצאו רשומות התואמות לקטגוריה זו במסגרת החשבון שלך.
+            </div>
+        `;
+        return;
+    }
+
+    activityGridContainer.innerHTML = list.map(item => createItemCardHTML(item, tabContext)).join('');
+}
+
+/**
+ * Maps triggers directly onto button identities specified inside your index.html
+ */
+function bindTabNavigation() {
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            let targetKey = 'bids';
+            if (button.id === 'tabSales') targetKey = 'sales';
+            if (button.id === 'tabWins') targetKey = 'wins';
+            if (button.id === 'tabWatchlist') targetKey = 'watchlist';
+
+            renderGrid(activityCache[targetKey], targetKey);
+        });
+    });
+}
+
+/**
+ * Pulls relational matrix configurations straight from ItemController.java
+ */
+async function fetchUserActivityData() {
+    const userSession = getAuthenticatedUser();
+
+    if (!userSession) {
+        window.location.href = '../auth/index.html';
+        return;
+    }
 
     try {
-        allItems = await getItems();
-        renderActivityView();
-    } catch (err) {
-        console.error('Data stream synchronization loading error:', err);
-        activityGrid.innerHTML = `<p class="no-activity-message">שגיאה בטעינת נתונים. וודא ששרת ה-Java פועל.</p>`;
+        const response = await fetch(`${API_BASE_URL}/activity?userId=${userSession.id}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP transaction breakdown state: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Absorb lists returned by Shai's custom Map framework
+        activityCache.bids = data.bids || [];
+        activityCache.sales = data.sales || [];
+        activityCache.wins = data.wins || [];
+        
+        loadLocalWatchlist();
+
+        // Discover and fall onto whichever button has the 'active' class on page load
+        const activeTab = document.querySelector('.activity-tabs .tab-btn.active');
+        let initialKey = 'bids';
+        if (activeTab) {
+            if (activeTab.id === 'tabSales') initialKey = 'sales';
+            if (activeTab.id === 'tabWins') initialKey = 'wins';
+            if (activeTab.id === 'tabWatchlist') initialKey = 'watchlist';
+        }
+
+        renderGrid(activityCache[initialKey], initialKey);
+
+    } catch (error) {
+        console.error('Data flow mapping halted:', error);
+        if (activityGridContainer) {
+            activityGridContainer.innerHTML = `
+                <div class="no-activity-message" style="color: red; border-color: red;">
+                    תקלה בתקשורת מול השרת בתהליך שליפת הפעילויות שלך.
+                </div>
+            `;
+        }
     }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+/**
+ * Setup hook directly matching explicit element bindings.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    activityGridContainer = document.getElementById('activityGrid');
+    tabButtons = document.querySelectorAll('.activity-tabs .tab-btn');
+
+    injectNavbar();
+    bindTabNavigation();
+    fetchUserActivityData();
+});
