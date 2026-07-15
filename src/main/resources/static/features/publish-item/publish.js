@@ -6,6 +6,7 @@ import { getCategories, uploadImage, createItem } from '../../shared/js/api.js';
  * Handles category retrieval and item publishing transaction pipelines.
  * Features automated runtime populating of Hour/Minute select lists to enforce
  * click-only time selection across all modern browsers (including Firefox).
+ * Implements strict runtime verification preventing users from publishing items with past end-dates.
  * @requires ../../shared/js/layout.js:injectNavbar
  * @requires ../../shared/js/layout.js:requireLogin
  * @requires ../../shared/js/api.js:getCategories
@@ -74,15 +75,23 @@ function forceNativeDatePicker(inputEl) {
 
 /**
  * Performs screen authentication verification, navbar injections,
- * populates the time picker selects, and retrieves dynamic category options.
+ * populates the time picker selects, restricts past dates, and retrieves dynamic category options.
  */
 async function initialize() {
     if (!requireLogin()) return;
     await injectNavbar();
 
-    // Dynamically build the hours/minutes selectors
+    // 1. Dynamically build the hours/minutes selectors
     populateTimeDropdowns();
 
+    // 2. UX Prevention: Set calendar "min" attribute to today's date (disables selecting past days)
+    if (endDateInput) {
+        const today = new Date();
+        const formattedToday = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        endDateInput.min = formattedToday;
+    }
+
+    // 3. Load Dynamic Category List
     try {
         const categories = await getCategories();
         categorySelect.innerHTML = '<option value="" disabled selected>בחר קטגוריה</option>';
@@ -97,7 +106,7 @@ async function initialize() {
         categorySelect.innerHTML = '<option value="" disabled>שגיאה בטעינת קטגוריות</option>';
     }
 
-    // Bind full element click handlers to trigger native calendar
+    // 4. Bind full element click handlers to trigger native calendar
     if (endDateInput) {
         endDateInput.addEventListener('click', () => forceNativeDatePicker(endDateInput));
     }
@@ -106,6 +115,7 @@ async function initialize() {
 /**
  * Validates, uploads physical image files, compiles form data,
  * and converts the split date & select dropdown elements into a standardized ISO-8601 payload.
+ * Runs strict chronological checks on the targeted end-time.
  */
 async function handleFormSubmit(event) {
     event.preventDefault();
@@ -117,11 +127,7 @@ async function handleFormSubmit(event) {
         const fileInput = document.getElementById('imageFile');
         if (!fileInput.files[0]) throw new Error('אנא בחר קובץ תמונה להעלאה.');
 
-        // Step 1: Upload the file binary
-        const uploadResponse = await uploadImage(fileInput.files[0]);
-        const uploadedImagePath = uploadResponse.imagePath;
-
-        // Step 2: Extract split parameters and combine them into ISO-8601 String
+        // Step 1: Extract split parameters and compile them into ISO-8601 String
         const rawDate = endDateInput.value;   // e.g., "2026-07-15"
         const rawHour = endHourSelect.value;   // e.g., "18"
         const rawMinute = endMinuteSelect.value; // e.g., "30"
@@ -133,7 +139,19 @@ async function handleFormSubmit(event) {
         // Unified format: "YYYY-MM-DDTHH:MM:00"
         const combinedIsoDateTime = `${rawDate}T${rawHour}:${rawMinute}:00`;
 
-        // Step 3: Build payload mapping structure
+        // Step 2: Critical validation - Ensure the selected end-time is in the future
+        const targetDateTime = new Date(combinedIsoDateTime);
+        const currentDateTime = new Date();
+
+        if (targetDateTime <= currentDateTime) {
+            throw new Error('מועד סיום המכרז חייב להיות זמן עתידי בלבד (מאוחר יותר מהשעה הנוכחית).');
+        }
+
+        // Step 3: Upload the file binary (Runs only if time validation passes!)
+        const uploadResponse = await uploadImage(fileInput.files[0]);
+        const uploadedImagePath = uploadResponse.imagePath;
+
+        // Step 4: Build payload mapping structure
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         const payload = {
             title: document.getElementById('title').value,
@@ -147,7 +165,7 @@ async function handleFormSubmit(event) {
             ]
         };
 
-        // Step 4: Dispatch payload and create item record
+        // Step 5: Dispatch payload and create item record
         await createItem(payload);
 
         showStatus('המוצר פורסם בהצלחה!', false);
