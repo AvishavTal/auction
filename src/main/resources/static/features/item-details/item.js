@@ -195,9 +195,8 @@ async function onBidSubmit(event) {
          * Dynamically populated utilizing true session identities to correct multi-account routing failures.
          */
         const bidPayload = {
-            itemId: String(currentItem.id),
-            userId: String(currentUser.id),         // Dynamic identity parsed directly from auth state context
-            username: String(currentUser.username), // Dynamic identifier parsed directly from auth state context
+            itemId: currentItem.id,
+            userId: currentUser.id,
             amount: manualAmount || 0,
             maxProxyAmount: proxyAmount || null
         };

@@ -64,10 +64,11 @@ export async function placeBid(bidData) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bidData)
     });
-    
+
     if (!response.ok) {
-        throw new Error(`Bid submission failed with status: ${response.status}`);
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || `שגיאה בהגשת הצעה (${response.status})`);
     }
-    
+
     return response.json();
 }

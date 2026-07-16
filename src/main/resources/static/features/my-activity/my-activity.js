@@ -42,10 +42,12 @@ function getAuthenticatedUser() {
 /**
  * Populates peripheral watch state matrices.
  */
-function loadLocalWatchlist() {
+async function loadLocalWatchlist() {
     try {
-        const payload = localStorage.getItem('user_watchlist') || localStorage.getItem('watchlist') || '[]';
-        activityCache.watchlist = JSON.parse(payload);
+        const ids = JSON.parse(localStorage.getItem('user_watchlist') || '[]');
+        if (ids.length === 0) { activityCache.watchlist = []; return; }
+        const response = await fetch(`${API_BASE_URL}/items/batch?ids=${ids.join(',')}`);
+        activityCache.watchlist = response.ok ? await response.json() : [];
     } catch (error) {
         activityCache.watchlist = [];
     }
@@ -81,7 +83,7 @@ function createItemCardHTML(item, tabContext) {
     if (tabContext === 'wins') {
         badgeClass = 'winning';
         badgeText = 'זכייה במכרז';
-    } else if (item.status === 'EXPIRED') {
+    } else if (item.status === 'SOLD' || new Date(item.endTime) < new Date()) {
         badgeClass = 'closed';
         badgeText = 'נסגר';
     }
@@ -188,7 +190,7 @@ async function fetchUserActivityData() {
         activityCache.sales = data.sales || [];
         activityCache.wins = data.wins || [];
         
-        loadLocalWatchlist();
+        await loadLocalWatchlist();
 
         // Discover whichever button has the 'active' class (this accounts for the restored tab!)
         const activeTab = document.querySelector('.activity-tabs .tab-btn.active');

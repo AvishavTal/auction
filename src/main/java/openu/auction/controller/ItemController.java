@@ -7,6 +7,7 @@ import openu.auction.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -48,6 +49,7 @@ public class ItemController {
     }
 
     // GET /api/activity?userId=X — returns bids/sales/wins for the My Activity page
+    @Transactional
     @GetMapping("/activity")
     public Map<String, List<Item>> getActivity(@RequestParam Long userId) {
         // Items the user bid on
@@ -64,6 +66,13 @@ public class ItemController {
         List<Item> winItems = itemRepository.findByWinnerId(userId);
 
         return Map.of("bids", bidItems, "sales", saleItems, "wins", winItems);
+    }
+
+    // GET /api/items/batch?ids=1,2,3 — fetch multiple items by ID (used by watchlist)
+    @Transactional
+    @GetMapping("/items/batch")
+    public List<Item> getItemsByIds(@RequestParam List<Long> ids) {
+        return itemRepository.findAllById(ids);
     }
 
     // DEV ONLY: fast-forward item end time to 10 seconds from now
