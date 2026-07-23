@@ -114,7 +114,7 @@ function formatDateString(dateString) {
  * @param {Object} item - Item object containing listing details.
  * @param {number|string} item.id - Unique item ID.
  * @param {string} [item.title] - Item title.
- * @param {number} [item.currentPrice] - Current highest bid.
+ * @param {number|null} [item.currentPrice] - Current highest bid.
  * @param {number} [item.startingPrice] - Initial starting price.
  * @param {string} [item.endTime] - Auction end date string.
  * @param {string} [item.status] - Listing status indicator (e.g., 'SOLD', 'ACTIVE').
@@ -127,7 +127,11 @@ function createItemCardHTML(item, tabContext) {
     
     const hasImage = item.images && item.images.length > 0 && item.images[0].imageUrl;
     const imageUrl = hasImage ? getImageUrl(item.images[0].imageUrl) : secureBase64Fallback;
-    const resolvedPrice = item.currentPrice !== undefined ? item.currentPrice : item.startingPrice;
+    
+    // Resolve dynamic price state and label
+    const hasCurrentPrice = item.currentPrice !== null && item.currentPrice !== undefined && item.currentPrice > 0;
+    const resolvedPrice = hasCurrentPrice ? item.currentPrice : (item.startingPrice || 0);
+    const priceLabel = hasCurrentPrice ? 'הצעה מובילה' : 'מחיר התחלתי';
 
     let badgeClass = 'active';
     let badgeText = 'פעיל';
@@ -150,7 +154,7 @@ function createItemCardHTML(item, tabContext) {
                      onerror="this.onerror=null; this.src='${secureBase64Fallback}';">
             </div>` : ''}
 
-            <p>מחיר: <strong>${resolvedPrice ? resolvedPrice.toLocaleString() : 0} ש"ח</strong></p>
+            <p>${priceLabel}: <strong>${resolvedPrice.toLocaleString()} ש"ח</strong></p>
             <p>סיום: <span>${formatDateString(item.endTime)}</span></p>
             
             <span class="status-badge ${badgeClass}">${badgeText}</span>
