@@ -83,18 +83,24 @@ async function loadLocalWatchlist() {
 }
 
 /**
- * Formats ISO 8601 or date-parseable strings into a 24-hour time string (`HH:MM:SS`) using Hebrew locale conventions.
+ * Formats ISO 8601 or date-parseable strings into a full date and time string (`DD/MM/YYYY, HH:MM`) using Hebrew locale conventions.
  *
  * @param {string} dateString - Target date string to format.
- * @returns {string} Formatted time string or standard default ('18:15:00') on parsing errors.
+ * @returns {string} Formatted date and time string or fallback string on parsing errors.
  */
 function formatDateString(dateString) {
-    if (!dateString) return '18:15:00';
+    if (!dateString) return '--/--/---- --:--';
     try {
         const date = new Date(dateString);
-        return date.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return date.toLocaleString('he-IL', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     } catch (e) {
-        return '18:15:00';
+        return dateString;
     }
 }
 
