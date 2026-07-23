@@ -1,3 +1,19 @@
+/**
+ * ============================================================================
+ * Global Framework Stylesheet
+ * ============================================================================
+ *
+ * @file global.css
+ * @module shared/css
+ * @description Global foundational stylesheet. Defines root design tokens (CSS
+ *              custom properties), body resets, navigation bar layout components,
+ *              login/logout highlight states, and system-wide alert message banners.
+ */
+
+/* ============================================================================
+   1. Design Tokens & CSS Custom Properties
+   ============================================================================ */
+
 :root {
     --primary-black: #000000;
     --border-gray: #ccc;
@@ -10,12 +26,23 @@
     --success-text: #008000;
 }
 
+/* ============================================================================
+   2. Base Layout & Reset Rules
+   ============================================================================ */
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     background-color: var(--bg-light);
 }
 
+/* ============================================================================
+   3. Navigation Bar Components
+   ============================================================================ */
+
+/**
+ * Base layout container for top navigation bar.
+ */
 .main-navbar {
     background-color: var(--primary-black);
     color: white;
@@ -25,41 +52,9 @@ body {
     align-items: center;
 }
 
-.nav-links {
-    list-style: none;
-    display: flex;
-    gap: 20px;
-    margin: 0;
-}
-
-.nav-links a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.ui-message {
-    padding: 15px;
-    margin-bottom: 20px;
-    font-weight: bold;
-    display: none;
-}
-
-.ui-message.error {
-    background-color: var(--error-bg);
-    color: var(--error-text);
-    border: 1px solid var(--error-border);
-    display: block;
-}
-
-.ui-message.success {
-    background-color: var(--success-bg);
-    color: var(--success-text);
-    border: 1px solid var(--success-border);
-    display: block;
-}
-
-/* Global Navbar Core Styling */
+/**
+ * Secondary layout class for dynamic global header component.
+ */
 .global-navbar {
     display: flex;
     justify-content: space-between;
@@ -77,10 +72,15 @@ body {
     letter-spacing: 1px;
 }
 
+/**
+ * Horizontal navigation link list container.
+ */
 .nav-links {
+    list-style: none;
     display: flex;
     align-items: center;
     gap: 25px;
+    margin: 0;
 }
 
 .nav-links a {
@@ -94,7 +94,13 @@ body {
     text-decoration: underline;
 }
 
-/* Highlighted Login button style */
+/* ============================================================================
+   4. Authenticated Session & User Interface Elements
+   ============================================================================ */
+
+/**
+ * High-visibility callout button for guest user login.
+ */
 .nav-login-highlight {
     background-color: white;
     color: black !important;
@@ -108,7 +114,9 @@ body {
     text-decoration: none !important;
 }
 
-/* Auth state components styling */
+/**
+ * Text element rendering active user identity greeting.
+ */
 .user-greeting {
     font-size: 14px;
     color: #e0e0e0;
@@ -116,6 +124,9 @@ body {
     padding-right: 15px;
 }
 
+/**
+ * Action trigger button for terminating user session.
+ */
 .nav-logout-btn {
     background: transparent;
     color: #ff5252;
@@ -130,4 +141,34 @@ body {
 .nav-logout-btn:hover {
     background: #ff5252;
     color: white;
+}
+
+/* ============================================================================
+   5. System Alert & Notification Banners
+   ============================================================================ */
+
+/**
+ * Base styling for system alert and status notification banners.
+ */
+.ui-message {
+    padding: 15px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    display: none;
+}
+
+/** Error notification state */
+.ui-message.error {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid var(--error-border);
+    display: block;
+}
+
+/** Success notification state */
+.ui-message.success {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid var(--success-border);
+    display: block;
 }

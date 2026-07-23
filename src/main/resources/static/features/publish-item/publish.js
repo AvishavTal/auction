@@ -1,32 +1,58 @@
+/**
+ * @file publish.js
+ * @module publish-item
+ * @description Item Publishing Controller Module.
+ *              Handles the lifecycle for creating and publishing new auction items,
+ *              including authentication enforcement, dynamic category loading,
+ *              custom date/time split picker population, temporal validation,
+ *              binary image upload processing, and API payload submission.
+ * @requires ../../shared/js/layout.js:injectNavbar,requireLogin
+ * @requires ../../shared/js/api.js:getCategories,uploadImage,createItem
+ */
+
 import { injectNavbar, requireLogin } from '../../shared/js/layout.js';
 import { getCategories, uploadImage, createItem } from '../../shared/js/api.js';
 
-/**
- * @fileoverview Controller module for Screen 4 (Publishing Items).
- * Handles category retrieval and item publishing transaction pipelines.
- * Features automated runtime populating of Hour/Minute select lists to enforce
- * click-only time selection across all modern browsers (including Firefox).
- * Implements strict runtime verification preventing users from publishing items with past end-dates.
- * @requires ../../shared/js/layout.js:injectNavbar
- * @requires ../../shared/js/layout.js:requireLogin
- * @requires ../../shared/js/api.js:getCategories
- * @requires ../../shared/js/api.js:uploadImage
- * @requires ../../shared/js/api.js:createItem
- */
+/* ============================================================================
+   DOM Element References
+   ============================================================================ */
 
+/** @type {HTMLFormElement} Primary form element for publishing items. */
 const form = document.getElementById('publishItemForm');
+
+/** @type {HTMLSelectElement} Dropdown element for category selection. */
 const categorySelect = document.getElementById('categoryId');
+
+/** @type {HTMLButtonElement} Primary submit action button. */
 const submitBtn = document.getElementById('submitBtn');
+
+/** @type {HTMLButtonElement} Cancellation button resetting form inputs. */
 const cancelBtn = document.getElementById('cancelBtn');
+
+/** @type {HTMLElement} Alert message banner container. */
 const uiMessage = document.getElementById('uiMessage');
 
-// Explicit split datetime UI selectors
+// Split DateTime UI Elements
+/** @type {HTMLInputElement} Date input element for auction end date. */
 const endDateInput = document.getElementById('endDate');
+
+/** @type {HTMLSelectElement} Dropdown element for selecting expiration hour. */
 const endHourSelect = document.getElementById('endHour');
+
+/** @type {HTMLSelectElement} Dropdown element for selecting expiration minute. */
 const endMinuteSelect = document.getElementById('endMinute');
 
+/* ============================================================================
+   UI Helper & Initializer Functions
+   ============================================================================ */
+
 /**
- * Renders success/error visual state messages.
+ * Renders status alerts or operational error messages in the UI notification bar.
+ * Automatically clears displayed messages after a 5-second delay.
+ *
+ * @param {string} text - The message content to present.
+ * @param {boolean} [isError=false] - If true, applies error styling; otherwise success styling.
+ * @returns {void}
  */
 function showStatus(text, isError = false) {
     uiMessage.textContent = text;
@@ -36,13 +62,15 @@ function showStatus(text, isError = false) {
 }
 
 /**
- * Programmatically generates option entries for time-picker dropdown selects.
- * Prevents bloated HTML files by constructing option matrices dynamically.
+ * Programmatically constructs `<option>` tags for hour (00-23) and minute (00-59) select dropdowns.
+ * Guarantees click-only interaction across modern browser vendors.
+ *
+ * @returns {void}
  */
 function populateTimeDropdowns() {
     if (!endHourSelect || !endMinuteSelect) return;
 
-    // 1. Populate Hours (00 - 23)
+    // Populate Hours (00 - 23)
     let hourOptions = '<option value="" disabled selected>שעה</option>';
     for (let h = 0; h < 24; h++) {
         const hourString = h.toString().padStart(2, '0');
@@ -50,7 +78,7 @@ function populateTimeDropdowns() {
     }
     endHourSelect.innerHTML = hourOptions;
 
-    // 2. Populate Minutes (00 - 59)
+    // Populate Minutes (00 - 59)
     let minuteOptions = '<option value="" disabled selected>דקות</option>';
     for (let m = 0; m < 60; m++) {
         const minuteString = m.toString().padStart(2, '0');
@@ -60,8 +88,10 @@ function populateTimeDropdowns() {
 }
 
 /**
- * Forces native browser date dialog widgets on element click.
- * @param {HTMLInputElement} inputEl 
+ * Programmatically triggers the native browser date picker interface if supported.
+ *
+ * @param {HTMLInputElement} inputEl - Target date input DOM element.
+ * @returns {void}
  */
 function forceNativeDatePicker(inputEl) {
     if (inputEl && typeof inputEl.showPicker === 'function') {
@@ -73,25 +103,32 @@ function forceNativeDatePicker(inputEl) {
     }
 }
 
+/* ============================================================================
+   Lifecycle Initialization & Event Handling
+   ============================================================================ */
+
 /**
- * Performs screen authentication verification, navbar injections,
- * populates the time picker selects, restricts past dates, and retrieves dynamic category options.
+ * Initializes the view on load. Validates user authentication, injects navbar,
+ * populates time select lists, restricts past calendar dates, and retrieves category options from API.
+ *
+ * @async
+ * @returns {Promise<void>}
  */
 async function initialize() {
     if (!requireLogin()) return;
     await injectNavbar();
 
-    // 1. Dynamically build the hours/minutes selectors
+    // Dynamically build hours and minutes dropdowns
     populateTimeDropdowns();
 
-    // 2. UX Prevention: Set calendar "min" attribute to today's date (disables selecting past days)
+    // Restrict date input to prevent selecting past calendar days
     if (endDateInput) {
         const today = new Date();
-        const formattedToday = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+        const formattedToday = today.toISOString().split('T')[0];
         endDateInput.min = formattedToday;
     }
 
-    // 3. Load Dynamic Category List
+    // Fetch dynamic categories list
     try {
         const categories = await getCategories();
         categorySelect.innerHTML = '<option value="" disabled selected>בחר קטגוריה</option>';
@@ -106,16 +143,19 @@ async function initialize() {
         categorySelect.innerHTML = '<option value="" disabled>שגיאה בטעינת קטגוריות</option>';
     }
 
-    // 4. Bind full element click handlers to trigger native calendar
+    // Bind click handler to launch native calendar dialog
     if (endDateInput) {
         endDateInput.addEventListener('click', () => forceNativeDatePicker(endDateInput));
     }
 }
 
 /**
- * Validates, uploads physical image files, compiles form data,
- * and converts the split date & select dropdown elements into a standardized ISO-8601 payload.
- * Runs strict chronological checks on the targeted end-time.
+ * Handles form submission: validates file uploads and end-times, uploads image binary,
+ * constructs ISO 8601 payload, and posts new auction item record to API.
+ *
+ * @async
+ * @param {SubmitEvent} event - Native DOM form submission event.
+ * @returns {Promise<void>}
  */
 async function handleFormSubmit(event) {
     event.preventDefault();
@@ -127,19 +167,19 @@ async function handleFormSubmit(event) {
         const fileInput = document.getElementById('imageFile');
         if (!fileInput.files[0]) throw new Error('אנא בחר קובץ תמונה להעלאה.');
 
-        // Step 1: Extract split parameters and compile them into ISO-8601 String
-        const rawDate = endDateInput.value;   // e.g., "2026-07-15"
-        const rawHour = endHourSelect.value;   // e.g., "18"
-        const rawMinute = endMinuteSelect.value; // e.g., "30"
+        // Extract date and time parameters
+        const rawDate = endDateInput.value;   
+        const rawHour = endHourSelect.value;   
+        const rawMinute = endMinuteSelect.value; 
 
         if (!rawDate || !rawHour || !rawMinute) {
             throw new Error('אנא מלא את כל שדות התאריך והשעה של סיום המכרז.');
         }
         
-        // Unified format: "YYYY-MM-DDTHH:MM:00"
+        // Construct ISO-8601 string: "YYYY-MM-DDTHH:MM:00"
         const combinedIsoDateTime = `${rawDate}T${rawHour}:${rawMinute}:00`;
 
-        // Step 2: Critical validation - Ensure the selected end-time is in the future
+        // Temporal Validation: Ensure expiration timestamp is in the future
         const targetDateTime = new Date(combinedIsoDateTime);
         const currentDateTime = new Date();
 
@@ -147,17 +187,17 @@ async function handleFormSubmit(event) {
             throw new Error('מועד סיום המכרז חייב להיות זמן עתידי בלבד (מאוחר יותר מהשעה הנוכחית).');
         }
 
-        // Step 3: Upload the file binary (Runs only if time validation passes!)
+        // Binary Image Upload
         const uploadResponse = await uploadImage(fileInput.files[0]);
         const uploadedImagePath = uploadResponse.imagePath;
 
-        // Step 4: Build payload mapping structure
+        // Map Payload Object
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         const payload = {
             title: document.getElementById('title').value,
             description: document.getElementById('description').value,
             startingPrice: parseFloat(document.getElementById('startingPrice').value),
-            endTime: combinedIsoDateTime, // Dynamic reconstructed ISO String
+            endTime: combinedIsoDateTime,
             sellerId: currentUser?.id,
             category: { id: parseInt(categorySelect.value, 10) },
             images: [
@@ -165,13 +205,13 @@ async function handleFormSubmit(event) {
             ]
         };
 
-        // Step 5: Dispatch payload and create item record
+        // Post new item entity
         await createItem(payload);
 
         showStatus('המוצר פורסם בהצלחה!', false);
         form.reset();
         
-        // Reset dropdown states to default select prompts
+        // Reset dropdown selectors to default state
         populateTimeDropdowns();
         
     } catch (err) {
@@ -182,6 +222,10 @@ async function handleFormSubmit(event) {
         submitBtn.textContent = 'פרסם מכירה עכשיו';
     }
 }
+
+/* ============================================================================
+   Event Listener Registrations
+   ============================================================================ */
 
 document.addEventListener('DOMContentLoaded', initialize);
 form.addEventListener('submit', handleFormSubmit);

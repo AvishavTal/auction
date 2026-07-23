@@ -1,14 +1,35 @@
 /**
- * @fileoverview Publish Item Layout Architecture (Screen 4).
- * Handles flexible grid layouts and localized cross-browser input styling.
+ * ============================================================================
+ * Item Publishing Module Stylesheet
+ * ============================================================================
+ *
+ * @file publish.css
+ * @module publish-item
+ * @description Stylesheet for the new item publication view. Defines card-based
+ *              form container layouts, cross-browser input controls, custom
+ *              date/time picker split layouts, action button states, and system
+ *              alert notification messaging.
+ * @dependencies Expects the following CSS custom properties defined in global scope:
+ *               - --primary-black
+ *               - --border-gray
  */
 
+/* ============================================================================
+   1. Main Layout & Form Container
+   ============================================================================ */
+
+/**
+ * Centered wrapper layout providing padding around the publishing card container.
+ */
 .main-content {
     display: flex;
     justify-content: center;
     padding: 40px;
 }
 
+/**
+ * Main form wrapper card featuring neo-brutalist structural borders and hard shadows.
+ */
 .form-container {
     background-color: #ffffff;
     border: 2px solid var(--border-gray);
@@ -19,6 +40,9 @@
     box-sizing: border-box;
 }
 
+/**
+ * Form section header with bottom structural border.
+ */
 h2 {
     border-bottom: 2px solid var(--primary-black);
     padding-bottom: 10px;
@@ -26,6 +50,13 @@ h2 {
     margin-bottom: 20px;
 }
 
+/* ============================================================================
+   2. Form Input Controls & Base Typography
+   ============================================================================ */
+
+/**
+ * Vertical spacing wrapper for individual form field groups.
+ */
 .form-group {
     margin-bottom: 15px;
 }
@@ -36,6 +67,9 @@ label {
     margin-bottom: 5px;
 }
 
+/**
+ * Unified sizing and border styling across standard input types, dropdowns, and textareas.
+ */
 input[type="text"], 
 input[type="number"], 
 input[type="date"],
@@ -48,44 +82,12 @@ textarea {
     font-family: inherit;
 }
 
-/* Enforce clickable pointer for date and time inputs */
+/**
+ * Enforces interactive cursor feedback on clickable date and time select dropdowns.
+ */
 input[type="date"],
 .time-picker-select-group select {
     cursor: pointer;
-}
-
-/* Split layout to render Date and Time inline on the same block */
-.datetime-split-container {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    align-items: center;
-}
-
-.datetime-split-container input[type="date"] {
-    flex: 1.5; /* Date gets more visual space */
-}
-
-/* Custom time selection group layout */
-.time-picker-select-group {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex: 1;
-}
-
-.time-picker-select-group select {
-    padding: 8px;
-    border: 1px solid var(--border-gray);
-    text-align: center;
-    font-size: 0.95rem;
-}
-
-.time-colon {
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: var(--primary-black);
-    user-select: none;
 }
 
 textarea {
@@ -101,21 +103,89 @@ input[type="file"] {
     background-color: #fff;
 }
 
+/* ============================================================================
+   3. Custom DateTime Split Picker Layout
+   ============================================================================ */
+
+/**
+ * Horizontal flex container rendering date input and time select controls inline.
+ */
+.datetime-split-container {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    align-items: center;
+}
+
+/**
+ * Date picker flex-grow priority allocation.
+ */
+.datetime-split-container input[type="date"] {
+    flex: 1.5;
+}
+
+/**
+ * Flex wrapper for hour and minute dropdown selection controls.
+ */
+.time-picker-select-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.time-picker-select-group select {
+    padding: 8px;
+    border: 1px solid var(--border-gray);
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+/**
+ * Visual separator colon between hour and minute select controls.
+ */
+.time-colon {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--primary-black);
+    user-select: none;
+}
+
+/* ============================================================================
+   4. Grid Layout & Structural Columns
+   ============================================================================ */
+
+/**
+ * Horizontal flex row for multi-column form layouts.
+ */
 .row {
     display: flex;
     gap: 20px;
 }
 
+/**
+ * Equal-width column wrapper inside flex rows.
+ */
 .col {
     flex: 1;
 }
 
+/* ============================================================================
+   5. Action Buttons & Form Controls
+   ============================================================================ */
+
+/**
+ * Flexbox container for form submission and cancellation action buttons.
+ */
 .actions {
     display: flex;
     gap: 10px;
     margin-top: 20px;
 }
 
+/**
+ * Base styling for form trigger buttons.
+ */
 .btn {
     padding: 12px;
     cursor: pointer;
@@ -130,12 +200,14 @@ input[type="file"] {
     cursor: not-allowed;
 }
 
+/** Primary submit action button (takes 2/3 flex ratio) */
 .btn-primary {
     background-color: var(--primary-black);
     color: #ffffff;
     flex: 2;
 }
 
+/** Secondary cancel action button (takes 1/3 flex ratio) */
 .btn-secondary {
     background-color: #ffffff;
     color: var(--primary-black);
@@ -143,6 +215,13 @@ input[type="file"] {
     flex: 1;
 }
 
+/* ============================================================================
+   6. UI Message & System Alert Alerts
+   ============================================================================ */
+
+/**
+ * Dynamic system alert notification bar container.
+ */
 .ui-message {
     padding: 12px;
     margin-bottom: 20px;
@@ -151,12 +230,14 @@ input[type="file"] {
     border: 1px solid transparent;
 }
 
+/** Success alert state styling */
 .ui-message.success {
     background-color: #e8f5e9;
     color: #2e7d32;
     border-color: #a5d6a7;
 }
 
+/** Error alert state styling */
 .ui-message.error {
     background-color: #ffebee;
     color: #c62828;

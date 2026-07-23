@@ -1,21 +1,42 @@
+<!--
+  ============================================================================
+  User Activity & History View Template
+  ============================================================================
+
+  @file index.html
+  @module my-activity
+  @description HTML5 view template for managing personal user activity. Provides 
+               a tabbed interface to switch between submitted bids, published 
+               listings, auction wins, and bookmarked watchlist items.
+  @dependencies
+    - Stylesheets: ../../shared/css/global.css, ./my-activity.css
+    - Scripts: ./my-activity.js (ES Module)
+-->
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>הפעילות שלי | Auction System</title>
+
+    <!-- Global Framework & View-Specific Stylesheets -->
     <link rel="stylesheet" href="../../shared/css/global.css">
     <link rel="stylesheet" href="my-activity.css">
 </head>
 <body>
 
+    <!-- Dynamic Navigation Bar Insertion Point (Populated via layout.js) -->
     <div id="navbar-placeholder"></div>
 
+    <!-- Main Activity Layout Container -->
     <main class="activity-layout">
+
+        <!-- Section Title Header -->
         <header class="section-header">
-            <h2>5. הפעילות שלי והיסטוריית פעולות</h2>
+            <h2> הפעילות שלי והיסטוריית פעולות</h2>
         </header>
 
+        <!-- Activity Navigation Tabs -->
         <div class="activity-tabs">
             <button id="tabBids" class="tab-btn active">הצעות המחיר שלי</button>
             <button id="tabSales" class="tab-btn">המכירות שפרסמתי</button>
@@ -23,11 +44,13 @@
             <button id="tabWatchlist" class="tab-btn">המעקב שלי </button>
         </div>
 
+        <!-- Dynamic Activity Grid Container -->
         <section id="activityGrid" class="activity-grid">
             <p class="loading-text">טוען נתונים...</p>
         </section>
     </main>
 
+    <!-- Client-Side Activity Controller Module -->
     <script type="module" src="my-activity.js"></script>
 </body>
 </html>

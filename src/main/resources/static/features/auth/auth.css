@@ -1,3 +1,23 @@
+/**
+ * ============================================================================
+ * Authentication Module Stylesheet
+ * ============================================================================
+ *
+ * @file auth.css
+ * @description Defines layout, card containers, tab controls, and form element
+ *              styles for the user authentication (login/register) views.
+ * @dependencies Expects the following CSS custom properties defined in global scope:
+ *               - --primary-black
+ *               - --border-gray
+ */
+
+/* ============================================================================
+   1. Main Layout & Card Container
+   ============================================================================ */
+
+/**
+ * Centered layout container accounting for fixed header/footer height offsets.
+ */
 .auth-layout {
     display: flex;
     justify-content: center;
@@ -6,6 +26,9 @@
     padding: 20px;
 }
 
+/**
+ * Main card wrapper featuring neo-brutalist structural styling.
+ */
 .auth-card {
     background: white;
     border: 2px solid var(--primary-black);
@@ -15,11 +38,21 @@
     box-sizing: border-box;
 }
 
+/* ============================================================================
+   2. Authentication Navigation Tabs
+   ============================================================================ */
+
+/**
+ * Flex container for tab-based view switches (e.g., Login vs. Register).
+ */
 .auth-tabs {
     display: flex;
     border-bottom: 2px solid var(--primary-black);
 }
 
+/**
+ * Default state for interactive tab toggle buttons.
+ */
 .tab-btn {
     flex: 1;
     padding: 15px;
@@ -31,11 +64,21 @@
     font-family: inherit;
 }
 
+/**
+ * Active tab indicator highlighting the selected form view.
+ */
 .tab-btn.active {
     background: white;
     border-bottom: 4px solid var(--primary-black);
 }
 
+/* ============================================================================
+   3. Form Elements & Controls
+   ============================================================================ */
+
+/**
+ * Inner padding wrapper for authentication form content.
+ */
 .auth-form {
     padding: 30px;
 }
@@ -46,6 +89,9 @@
     font-size: 1.4rem;
 }
 
+/**
+ * Form field grouping container providing vertical layout spacing.
+ */
 .form-group {
     margin-bottom: 20px;
 }
@@ -63,6 +109,9 @@
     box-sizing: border-box;
 }
 
+/**
+ * Call-to-Action button for authentication submission.
+ */
 .btn-auth {
     width: 100%;
     padding: 12px;
@@ -75,6 +124,13 @@
     margin-top: 10px;
 }
 
+/* ============================================================================
+   4. Visibility Utilities
+   ============================================================================ */
+
+/**
+ * Strict override utility to suppress rendering of inactive form panels.
+ */
 .hidden {
     display: none !important;
 }

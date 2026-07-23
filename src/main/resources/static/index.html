@@ -1,10 +1,29 @@
+<!--
+  ============================================================================
+  Application Entry Point Router Template
+  ============================================================================
+
+  @file index.html
+  @path /index.html
+  @module root
+  @description Main entry point HTML template. Displays a fallback loading layout
+               and executes client-side authentication-based routing logic upon
+               DOM readiness.
+  @dependencies
+    - Targets: features/gallery/index.html, features/publish-item/index.html
+-->
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auction System</title>
+
+    <!-- Fallback / Loading Container Stylesheet -->
     <style>
+        /* ============================================================================
+           1. Base Body Reset & Layout Alignment
+           ============================================================================ */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -14,6 +33,10 @@
             height: 100vh;
             margin: 0;
         }
+
+        /* ============================================================================
+           2. Loading Card Container Components
+           ============================================================================ */
         .loading-container {
             text-align: center;
             background: white;
@@ -21,27 +44,31 @@
             border: 2px solid #000;
             box-shadow: 10px 10px 0px #ccc;
         }
+
         .loading-container a {
             color: #000;
             font-weight: bold;
         }
     </style>
     
+    <!-- Client-Side Router Module Script -->
     <script type="module">
         /**
-         * Application Entry Point Router
-         * Determines the initial screen for the user.
+         * @file index.html (Inline Router Module)
+         * @module root/router
+         * @description Application entry point routing controller.
+         *              Evaluates user session state on DOMContentLoaded and orchestrates
+         *              the initial navigation flow.
          */
         document.addEventListener('DOMContentLoaded', () => {
-            // Check authentication token or status here in the future
+            /** @type {boolean} Authentication state indicator */
             const isLoggedIn = false; 
 
             if (isLoggedIn) {
-                // Redirect authenticated users straight to the gallery
+                // Redirect authenticated users directly to the gallery feature
                 window.location.href = 'features/gallery/index.html';
             } else {
-                // Redirect unauthenticated users to the login/register page
-                // Temporary routing directly to gallery or login based on your current testing needs
+                // Redirect unauthenticated/guest users to the public gallery
                 window.location.href = 'features/gallery/index.html';
             }
         });
@@ -49,6 +76,7 @@
 </head>
 <body>
 
+    <!-- Fallback UI displayed during page redirection -->
     <div class="loading-container">
         <h2>Loading Auction System...</h2>
         <p>If you are not redirected automatically, use the links below:</p>

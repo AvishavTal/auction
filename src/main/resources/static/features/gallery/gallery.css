@@ -1,9 +1,33 @@
+/**
+ * ============================================================================
+ * Auction Gallery Module Stylesheet
+ * ============================================================================
+ *
+ * @file gallery.css
+ * @description Defines layout structures, search and filter toolbar controls,
+ *              responsive item grids, and product card visual components
+ *              for displaying active auction listings.
+ * @dependencies Expects the following CSS custom properties defined in global scope:
+ *               - --primary-black
+ *               - --border-gray
+ */
+
+/* ============================================================================
+   1. Main Layout & Header Section
+   ============================================================================ */
+
+/**
+ * Primary container wrapping the entire gallery page content.
+ */
 .gallery-container {
     max-width: 1200px;
     width: 90%;
     margin: 20px auto;
 }
 
+/**
+ * Top bar header container holding page title and action buttons.
+ */
 .gallery-header {
     display: flex;
     justify-content: space-between;
@@ -12,6 +36,9 @@
     margin-bottom: 20px;
 }
 
+/**
+ * Call-to-Action button for creating and publishing a new auction listing.
+ */
 .btn-publish {
     background-color: #fffde7;
     border: 2px dashed var(--primary-black);
@@ -20,25 +47,45 @@
     font-weight: bold;
 }
 
+/* ============================================================================
+   2. Filters & Controls Toolbar
+   ============================================================================ */
+
+/**
+ * Flexbox container for search inputs and sorting dropdown controls.
+ */
 .filters-bar {
     display: flex;
     gap: 10px;
     margin-bottom: 30px;
 }
 
-.filters-bar input, .filters-bar select {
+/**
+ * Uniform styling for filter input controls and select dropdowns.
+ */
+.filters-bar input, 
+.filters-bar select {
     padding: 8px;
     border: 1px solid var(--border-gray);
     flex: 1;
 }
 
+/* ============================================================================
+   3. Product Grid & Item Cards
+   ============================================================================ */
+
+/**
+ * Responsive CSS Grid container automatically placing auction item cards.
+ */
 .items-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 25px;
 }
 
-/* Product Card Styling */
+/**
+ * Individual auction item card container.
+ */
 .item-card {
     border: 1px solid var(--primary-black);
     padding: 15px;
@@ -48,6 +95,9 @@
     text-align: center;
 }
 
+/**
+ * Media frame for displaying the primary image of an auction item.
+ */
 .item-image {
     width: 100%;
     height: 180px;
@@ -57,22 +107,34 @@
     border: 1px dashed #ccc;
 }
 
+/**
+ * Item title display.
+ */
 .item-title {
     font-size: 1.2rem;
     font-weight: bold;
     margin: 10px 0;
 }
 
+/**
+ * Container displaying current bid or starting price.
+ */
 .item-price {
     margin: 5px 0;
 }
 
+/**
+ * Highlighted auction countdown timer badge.
+ */
 .item-timer {
     color: red;
     font-weight: bold;
     margin: 10px 0;
 }
 
+/**
+ * Action button navigating to detailed auction item view.
+ */
 .btn-view {
     margin-top: auto;
     padding: 10px;
@@ -82,6 +144,9 @@
     font-weight: bold;
 }
 
+/**
+ * Hover state transition for the item view button.
+ */
 .btn-view:hover {
     background: #f0f0f0;
 }

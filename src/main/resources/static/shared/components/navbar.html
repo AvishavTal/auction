@@ -1,5 +1,22 @@
+<!--
+  ============================================================================
+  Global Navigation Bar Component
+  ============================================================================
+
+  @file navbar.html
+  @module shared/components
+  @description Global navigation header partial dynamically injected across views.
+               Provides brand logo and high-level routing links for browsing listings,
+               publishing new items, and session logout.
+  @dependencies
+    - Component Injector: shared/js/layout.js (`injectNavbar()`)
+    - Stylesheet: shared/css/global.css
+-->
 <nav class="main-navbar">
+    <!-- Application Brand Identifier -->
     <div class="logo">AuctionSystem</div>
+
+    <!-- Primary Navigation Routing Links -->
     <ul class="nav-links">
         <li><a href="../gallery/index.html">Gallery</a></li>
         <li><a href="../publish-item/index.html">Publish Item</a></li>

@@ -1,18 +1,32 @@
-import { injectNavbar } from '../../shared/js/layout.js';
-import { getImageUrl } from '../../shared/js/api.js'; // <-- התיקון: מייבאים את מתרגם הכתובות של שי
-
 /**
- * @fileoverview My Activity Controller Module (Screen 5).
- * Coordinates data state binding and UI orchestration.
- * Preserves the active tab state across page refreshes using sessionStorage.
- * Correctly parses relative backend image paths using getImageUrl.
+ * @file my-activity.js
+ * @module my-activity
+ * @description User Activity Controller Module.
+ *              Manages user activity views, including submitted bids, published listings,
+ *              won auctions, and watchlists. Handles asynchronous data fetching from backend APIs,
+ *              session storage state persistence for active tabs, image URL normalization,
+ *              and dynamic card grid rendering.
  * @requires ../../shared/js/layout.js:injectNavbar
  * @requires ../../shared/js/api.js:getImageUrl
  */
 
+import { injectNavbar } from '../../shared/js/layout.js';
+import { getImageUrl } from '../../shared/js/api.js';
+
+/**
+ * Base URL for REST API requests.
+ * @constant {string}
+ */
 const API_BASE_URL = 'http://localhost:8080/api';
 
-// In-memory runtime data structures
+/* ============================================================================
+   Module State Management
+   ============================================================================ */
+
+/**
+ * In-memory data cache holding activity categories fetched from the server and local storage.
+ * @type {{bids: Array<Object>, sales: Array<Object>, wins: Array<Object>, watchlist: Array<Object>}}
+ */
 let activityCache = {
     bids: [],
     sales: [],
@@ -20,12 +34,20 @@ let activityCache = {
     watchlist: []
 };
 
-// Explicit DOM target links matching index.html
+/** @type {HTMLElement|null} Container node where activity card grids are rendered. */
 let activityGridContainer = null;
+
+/** @type {Array<HTMLButtonElement>} Collection of tab button elements for switching views. */
 let tabButtons = [];
 
+/* ============================================================================
+   Authentication & Data Fetching Helpers
+   ============================================================================ */
+
 /**
- * Reconstructs the authenticated session metadata.
+ * Retrieves and validates the authenticated user session object from `localStorage`.
+ *
+ * @returns {{id: (number|string), username: string, fullName: string}|null} Authenticated user session or `null` if invalid/absent.
  */
 function getAuthenticatedUser() {
     try {
@@ -40,12 +62,19 @@ function getAuthenticatedUser() {
 }
 
 /**
- * Populates peripheral watch state matrices.
+ * Reads bookmarked item IDs from `localStorage` (`user_watchlist`) and performs a batch 
+ * fetch to retrieve full item entities for the watchlist cache.
+ *
+ * @async
+ * @returns {Promise<void>}
  */
 async function loadLocalWatchlist() {
     try {
         const ids = JSON.parse(localStorage.getItem('user_watchlist') || '[]');
-        if (ids.length === 0) { activityCache.watchlist = []; return; }
+        if (ids.length === 0) { 
+            activityCache.watchlist = []; 
+            return; 
+        }
         const response = await fetch(`${API_BASE_URL}/items/batch?ids=${ids.join(',')}`);
         activityCache.watchlist = response.ok ? await response.json() : [];
     } catch (error) {
@@ -54,7 +83,10 @@ async function loadLocalWatchlist() {
 }
 
 /**
- * Formats data timestamps into simple display strings.
+ * Formats ISO 8601 or date-parseable strings into a 24-hour time string (`HH:MM:SS`) using Hebrew locale conventions.
+ *
+ * @param {string} dateString - Target date string to format.
+ * @returns {string} Formatted time string or standard default ('18:15:00') on parsing errors.
  */
 function formatDateString(dateString) {
     if (!dateString) return '18:15:00';
@@ -66,14 +98,28 @@ function formatDateString(dateString) {
     }
 }
 
+/* ============================================================================
+   UI Component Renderers & Grid Controllers
+   ============================================================================ */
+
 /**
- * Generates card structures compiled using your exact CSS rules (.activity-card).
+ * Constructs an HTML card string for an individual item based on its status and active tab context.
+ *
+ * @param {Object} item - Item object containing listing details.
+ * @param {number|string} item.id - Unique item ID.
+ * @param {string} [item.title] - Item title.
+ * @param {number} [item.currentPrice] - Current highest bid.
+ * @param {number} [item.startingPrice] - Initial starting price.
+ * @param {string} [item.endTime] - Auction end date string.
+ * @param {string} [item.status] - Listing status indicator (e.g., 'SOLD', 'ACTIVE').
+ * @param {Array<{imageUrl: string}>} [item.images] - Media assets array.
+ * @param {string} tabContext - The active context identifier ('bids', 'sales', 'wins', or 'watchlist').
+ * @returns {string} HTML string representing the item card component.
  */
 function createItemCardHTML(item, tabContext) {
     const secureBase64Fallback = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
     
     const hasImage = item.images && item.images.length > 0 && item.images[0].imageUrl;
-    // התיקון: מעבירים את הכתובת בתוך getImageUrl בדיוק כמו בדף המוצר!
     const imageUrl = hasImage ? getImageUrl(item.images[0].imageUrl) : secureBase64Fallback;
     const resolvedPrice = item.currentPrice !== undefined ? item.currentPrice : item.startingPrice;
 
@@ -109,7 +155,11 @@ function createItemCardHTML(item, tabContext) {
 }
 
 /**
- * Flushes the isolated container targets cleanly without blowing up external layouts.
+ * Clears and populates the main activity grid container with item cards or an empty state warning.
+ *
+ * @param {Array<Object>} list - Collection of item entities to render.
+ * @param {string} tabContext - Context string identifying current active tab category.
+ * @returns {void}
  */
 function renderGrid(list, tabContext) {
     if (!activityGridContainer) return;
@@ -126,8 +176,14 @@ function renderGrid(list, tabContext) {
     activityGridContainer.innerHTML = list.map(item => createItemCardHTML(item, tabContext)).join('');
 }
 
+/* ============================================================================
+   Tab Navigation & State Persistence
+   ============================================================================ */
+
 /**
- * Checks sessionStorage for a previously active tab and restores its visual active state.
+ * Restores visual active state on tab buttons based on key saved in `sessionStorage`.
+ *
+ * @returns {void}
  */
 function restoreActiveTab() {
     const savedTabId = sessionStorage.getItem('activeActivityTab');
@@ -141,7 +197,9 @@ function restoreActiveTab() {
 }
 
 /**
- * Maps triggers directly onto button identities and caches the active state in sessionStorage.
+ * Binds event listeners to tab navigation buttons and commits active selection changes to `sessionStorage`.
+ *
+ * @returns {void}
  */
 function bindTabNavigation() {
     tabButtons.forEach(button => {
@@ -149,7 +207,7 @@ function bindTabNavigation() {
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
 
-            // Save the clicked tab's ID to sessionStorage
+            // Persist selected tab ID in session storage
             sessionStorage.setItem('activeActivityTab', button.id);
 
             let targetKey = 'bids';
@@ -162,8 +220,16 @@ function bindTabNavigation() {
     });
 }
 
+/* ============================================================================
+   Data Synchronization & Lifecycle Orchestration
+   ============================================================================ */
+
 /**
- * Pulls relational matrix configurations straight from ItemController.java
+ * Asynchronously retrieves user activity datasets (`bids`, `sales`, `wins`) from backend API,
+ * loads local watchlists, and triggers initial grid rendering based on active tab state.
+ *
+ * @async
+ * @returns {Promise<void>}
  */
 async function fetchUserActivityData() {
     const userSession = getAuthenticatedUser();
@@ -185,14 +251,14 @@ async function fetchUserActivityData() {
 
         const data = await response.json();
 
-        // Absorb lists returned by Shai's custom Map framework
+        // Assign response arrays to internal cache
         activityCache.bids = data.bids || [];
         activityCache.sales = data.sales || [];
         activityCache.wins = data.wins || [];
         
         await loadLocalWatchlist();
 
-        // Discover whichever button has the 'active' class (this accounts for the restored tab!)
+        // Identify currently active tab button to resolve initial key
         const activeTab = document.querySelector('.activity-tabs .tab-btn.active');
         let initialKey = 'bids';
         if (activeTab) {
@@ -215,15 +281,16 @@ async function fetchUserActivityData() {
     }
 }
 
-/**
- * Setup hook directly matching explicit element bindings.
- */
+/* ============================================================================
+   DOM Initialization
+   ============================================================================ */
+
 document.addEventListener('DOMContentLoaded', () => {
     activityGridContainer = document.getElementById('activityGrid');
     tabButtons = document.querySelectorAll('.activity-tabs .tab-btn');
 
-    restoreActiveTab(); // 1. Restore the visually active tab from sessionStorage
+    restoreActiveTab();
     injectNavbar();
-    bindTabNavigation(); // 2. Bind click events which write to sessionStorage
-    fetchUserActivityData(); // 3. Fetch and render based on the current active tab
+    bindTabNavigation();
+    fetchUserActivityData();
 });

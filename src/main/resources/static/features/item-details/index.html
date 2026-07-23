@@ -1,22 +1,45 @@
+<!--
+  ============================================================================
+  Item Details & Bidding View Template
+  ============================================================================
+
+  @file index.html
+  @module item-details
+  @description Main view for detailed item specifications, live countdown tracking,
+               watchlist toggling, manual and proxy bid submission, and recent
+               bidding history audit log display.
+  @dependencies
+    - Stylesheets: ../../shared/css/global.css, ./item.css
+    - Scripts: ./item.js (ES Module)
+-->
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Item Details | Auction System</title>
+
+    <!-- Global Framework & View-Specific Stylesheets -->
     <link rel="stylesheet" href="../../shared/css/global.css">
     <link rel="stylesheet" href="item.css">
 </head>
 <body>
     
+    <!-- Dynamic Navigation Bar Insertion Point (Populated via layout.js) -->
     <div id="navbar-placeholder"></div>
 
+    <!-- Main Item Details Layout Container -->
     <main class="item-details-layout">
+        
+        <!-- View Section Header -->
         <header class="section-header">
-            <h2>3. דף מוצר והגשת הצעה</h2>
+            <h2> דף מוצר והגשת הצעה</h2>
         </header>
 
+        <!-- Product Overview Grid: Specifications & Visual Media -->
         <section class="product-info-grid">
+            
+            <!-- Textual Specifications, Timer & Price Information -->
             <div class="product-text">
                 <h1 id="itemTitle">Loading Product...</h1>
                 <p class="description-block">
@@ -32,13 +55,18 @@
                 </div>
                 <button id="watchlistBtn" class="btn-watchlist">⭐ הוסף לרשימת מעקב</button>
             </div>
+
+            <!-- Visual Media Frame Container -->
             <div class="product-visual">
                 <img id="itemImage" src="../../shared/components/placeholder.png" alt="Product Image">
             </div>
         </section>
 
+        <!-- Bid Submission Section (Manual & Proxy Bidding) -->
         <section class="bidding-section">
             <h3>הגשת הצעה למכירה:</h3>
+            
+            <!-- Contextual Status / Error Alert Container -->
             <div id="uiMessage" class="ui-message"></div>
             
             <form id="bidForm" class="bid-form">
@@ -56,6 +84,7 @@
             </form>
         </section>
 
+        <!-- Audit Log: Recent Bidding History Table -->
         <section class="history-section">
             <h3>5 הצעות אחרונות:</h3>
             <table class="bids-table">
@@ -73,6 +102,7 @@
         </section>
     </main>
 
+    <!-- Client-Side Item Controller Module -->
     <script type="module" src="item.js"></script>
 </body>
 </html>

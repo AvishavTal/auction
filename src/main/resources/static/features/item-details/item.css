@@ -1,3 +1,26 @@
+/**
+ * ============================================================================
+ * Item Details & Bidding Module Stylesheet
+ * ============================================================================
+ *
+ * @file item.css
+ * @module item-details
+ * @description Stylesheet defining layouts, product information grids, media frames,
+ *              bidding form controls, watchlist toggle states, and bid history
+ *              audit tables for the item details view.
+ * @dependencies Expects the following CSS custom properties defined in global scope:
+ *               - --primary-black
+ *               - --border-gray
+ *               - --error-text
+ */
+
+/* ============================================================================
+   1. Primary Container & Layout Structure
+   ============================================================================ */
+
+/**
+ * Main wrapper layout centering the item details card.
+ */
 .item-details-layout {
     max-width: 1000px;
     margin: 30px auto;
@@ -5,11 +28,21 @@
     background: white;
 }
 
+/**
+ * Top section header with bottom structural border.
+ */
 .section-header {
     border-bottom: 2px solid var(--primary-black);
     margin-bottom: 30px;
 }
 
+/* ============================================================================
+   2. Product Information Grid & Visual Framing
+   ============================================================================ */
+
+/**
+ * Two-column grid separating textual product info from visual media.
+ */
 .product-info-grid {
     display: grid;
     grid-template-columns: 1.5fr 1fr;
@@ -17,42 +50,66 @@
     margin-bottom: 40px;
 }
 
+/**
+ * Paragraph block containing product description text.
+ */
 .description-block {
     margin: 20px 0;
     line-height: 1.6;
 }
 
+/**
+ * High-visibility alert styling for active countdown timers.
+ */
 .timer-red {
     color: var(--error-text);
     font-weight: bold;
     font-size: 1.4rem;
 }
 
+/**
+ * Prominent price display block.
+ */
 .price-block {
     font-size: 1.8rem;
     font-weight: bold;
     margin-top: 30px;
 }
 
+/**
+ * Media frame for product imagery featuring dashed structural borders.
+ */
 .product-visual img {
     width: 100%;
     border: 1px dashed var(--border-gray);
     padding: 10px;
 }
 
-/* Bidding Box */
+/* ============================================================================
+   3. Bidding Controls & Watchlist Interface
+   ============================================================================ */
+
+/**
+ * Enclosed box wrapping the manual and proxy bidding form inputs.
+ */
 .bidding-section {
     border: 2px solid var(--primary-black);
     padding: 25px;
     margin-bottom: 40px;
 }
 
+/**
+ * Horizontal flexbox wrapper for side-by-side bid input fields.
+ */
 .input-row {
     display: flex;
     gap: 20px;
     margin: 20px 0;
 }
 
+/**
+ * Flex-grow wrapper for individual input controls.
+ */
 .input-group {
     flex: 1;
 }
@@ -69,6 +126,9 @@
     border: 1px solid var(--border-gray);
 }
 
+/**
+ * Primary call-to-action button for bid submission.
+ */
 .btn-bid {
     width: 100%;
     padding: 15px;
@@ -80,23 +140,9 @@
     cursor: pointer;
 }
 
-/* History Table */
-.bids-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.bids-table th, .bids-table td {
-    border: 1px solid var(--border-gray);
-    padding: 12px;
-    text-align: right;
-}
-
-.bids-table th {
-    background-color: #f8f8f8;
-}
-
-/* Watchlist Button Styling */
+/**
+ * Default state for the user watchlist toggle button.
+ */
 .btn-watchlist {
     margin-top: 15px;
     padding: 12px 20px;
@@ -111,12 +157,40 @@
     font-family: inherit;
 }
 
+/**
+ * Hover transition state for the watchlist toggle button.
+ */
 .btn-watchlist:hover {
     background-color: #f9f9f9;
 }
 
-/* State modification when item is actively watched */
+/**
+ * Visual feedback state applied when the item is actively tracked in the user's watchlist.
+ */
 .btn-watchlist.watching {
     background-color: #fffde7;
     border: 2px solid #000000;
+}
+
+/* ============================================================================
+   4. Bidding History Table
+   ============================================================================ */
+
+/**
+ * Tabular layout displaying recent bid history.
+ */
+.bids-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bids-table th, 
+.bids-table td {
+    border: 1px solid var(--border-gray);
+    padding: 12px;
+    text-align: right;
+}
+
+.bids-table th {
+    background-color: #f8f8f8;
 }

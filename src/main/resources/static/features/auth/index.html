@@ -1,25 +1,46 @@
+<!--
+  ============================================================================
+  Authentication View Template
+  ============================================================================
+
+  @file auth.html
+  @description HTML5 structure for the User Authentication module (Login & Registration).
+               Provides a tabbed layout container, accessible form fields, dynamic notification
+               placeholders, and script entry points.
+  @dependencies
+    - Stylesheets: ../../shared/css/global.css, ./auth.css
+    - Scripts: ./auth.js (ES Module)
+-->
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>התחברות והרשמה | Auction System</title>
+
+    <!-- Global Framework & View-Specific Stylesheets -->
     <link rel="stylesheet" href="../../shared/css/global.css">
     <link rel="stylesheet" href="auth.css">
 </head>
 <body>
-    
+
+    <!-- Dynamic Navigation Bar Insertion Point (Populated via layout.js) -->
     <div id="navbar-placeholder"></div>
 
+    <!-- Main Authentication View Layout -->
     <main class="auth-layout">
         <div class="auth-card">
+
+            <!-- Tab Switching Navigation Header -->
             <div class="auth-tabs">
                 <button id="tabLogin" class="tab-btn active">התחברות</button>
                 <button id="tabRegister" class="tab-btn">הרשמה למערכת</button>
             </div>
 
+            <!-- Global Alert & System Notification Container -->
             <div id="uiMessage" class="ui-message"></div>
 
+            <!-- User Login Form View -->
             <form id="loginForm" class="auth-form">
                 <h2>ברוך הבא בשנית</h2>
                 <div class="form-group">
@@ -33,6 +54,7 @@
                 <button type="submit" class="btn-auth">התחבר עכשיו</button>
             </form>
 
+            <!-- User Registration Form View (Suppressed by default via .hidden class) -->
             <form id="registerForm" class="auth-form hidden">
                 <h2>יצירת חשבון חדש</h2>
                 <div class="form-group">
@@ -56,6 +78,7 @@
         </div>
     </main>
 
+    <!-- Client-Side Controller Integration Module -->
     <script type="module" src="auth.js"></script>
 </body>
 </html>

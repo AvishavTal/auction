@@ -1,41 +1,58 @@
+/**
+ * @file item.js
+ * @module item-details
+ * @description Item Details & Live Bidding Controller.
+ *              Manages detailed product view rendering, active auction countdown tickers,
+ *              client-side watchlist persistence, manual and proxy bid submission workflows,
+ *              and recent bidding history rendering via backend REST APIs.
+ * @requires ../../shared/js/layout.js:injectNavbar
+ * @requires ../../shared/js/api.js:getItemById,placeBid,getImageUrl
+ */
+
 import { injectNavbar } from '../../shared/js/layout.js';
 import { getItemById, placeBid, getImageUrl } from '../../shared/js/api.js';
 
-/**
- * @fileoverview Controller module for Screen 3 (Item Details, Live Bidding, and Watchlist).
- * Tracks dynamic bidding transactions and synchronizes local identities dynamic contexts.
- * Fully refactored to terminate static simulation metadata payloads securely.
- * @requires ../../shared/js/layout.js:injectNavbar
- * @requires ../../shared/js/api.js:getItemById
- * @requires ../../shared/js/api.js:placeBid
- * @requires ../../shared/js/api.js:getImageUrl
- */
+/* ============================================================================
+   DOM Element References
+   ============================================================================ */
 
-// ==========================================
-// UI DOM Element References
-// ==========================================
+/** @type {HTMLElement} Container element for status and validation alert messages. */
 const uiMessage = document.getElementById('uiMessage');
+
+/** @type {HTMLButtonElement} Submit button control for bid form submission. */
 const submitBidBtn = document.getElementById('submitBidBtn');
+
+/** @type {HTMLFormElement} Form element capturing manual and proxy bid inputs. */
 const bidForm = document.getElementById('bidForm');
+
+/** @type {HTMLButtonElement} Toggle button for adding/removing items from watchlist. */
 const watchlistBtn = document.getElementById('watchlistBtn');
 
-// ==========================================
-// Module State Management
-// ==========================================
-/** @type {Object|null} Stores the active product entity retrieved from the backend. */
+/* ============================================================================
+   Module State Management
+   ============================================================================ */
+
+/** 
+ * Stores the active product entity retrieved from the API.
+ * @type {Object|null} 
+ */
 let currentItem = null;
 
-/** @type {number|null} Reference ID for the countdown interval loop to prevent memory leaks. */
+/** 
+ * Interval timer handle for continuous countdown clock updates.
+ * @type {number|null} 
+ */
 let countdownInterval = null;
 
-// ==========================================
-// Core Functions & Business Logic
-// ==========================================
+/* ============================================================================
+   Core Functions & Business Logic
+   ============================================================================ */
 
 /**
- * Displays status alerts or operational error messages to the end-user.
- * @param {string} text - The informative message or error description to render.
- * @param {boolean} [isError=false] - If true, applies error styling; otherwise applies success styling.
+ * Displays operational status alerts or error messages to the end-user.
+ *
+ * @param {string} text - The informative text or error message to display.
+ * @param {boolean} [isError=false] - Toggles error visual state vs. success state.
  * @returns {void}
  */
 function showStatus(text, isError = false) {
@@ -45,9 +62,9 @@ function showStatus(text, isError = false) {
 }
 
 /**
- * Extracts the target product ID directly from the active URL query string parameters.
- * URL pattern expected: /item.html?id=XYZ
- * @returns {string|null} The product identifier string, or null if the parameter is absent.
+ * Extracts the product identifier from URL query string parameters (`?id=XYZ`).
+ *
+ * @returns {string|null} The product ID if found, otherwise `null`.
  */
 function getProductId() {
     const params = new URLSearchParams(window.location.search);
@@ -55,9 +72,10 @@ function getProductId() {
 }
 
 /**
- * Calculates remaining time against the target timestamp and updates the UI countdown ticker.
- * Automatically locks the bidding interface immediately upon auction expiration.
- * @param {string} endTimeStr - ISO 8601 compliant datetime string indicating when the auction terminates.
+ * Calculates time remaining until auction expiration and updates the countdown display node.
+ * Automatically disables bidding controls once time expires.
+ *
+ * @param {string} endTimeStr - ISO date string specifying the auction end timestamp.
  * @returns {void}
  */
 function updateTimer(endTimeStr) {
@@ -66,6 +84,7 @@ function updateTimer(endTimeStr) {
     const diff = endTime - now;
     const timerDisplay = document.getElementById('countdown');
 
+    // Handle auction expiration state
     if (diff <= 0) {
         timerDisplay.textContent = "המכרז נסגר";
         if (submitBidBtn) submitBidBtn.disabled = true;
@@ -75,6 +94,7 @@ function updateTimer(endTimeStr) {
         return;
     }
 
+    // Convert millisecond delta into HH:MM:SS format
     const h = Math.floor(diff / (1000 * 60 * 60));
     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const s = Math.floor((diff % (1000 * 60)) / 1000);
@@ -82,8 +102,9 @@ function updateTimer(endTimeStr) {
 }
 
 /**
- * Evaluates item presence in local storage watchlist and updates the visual state of the trigger button.
- * @param {number|string} itemId - The unique identifier of the active item.
+ * Evaluates item presence in local storage watchlist and updates button labels and visual states.
+ *
+ * @param {number|string} itemId - The unique identifier of the active auction item.
  * @returns {void}
  */
 function renderWatchlistButton(itemId) {
@@ -100,8 +121,8 @@ function renderWatchlistButton(itemId) {
 }
 
 /**
- * Toggles the presence of the active item inside the client-side persistent watchlist array.
- * Triggered via the UI watchlist button action listener.
+ * Toggles presence of the active item inside local storage watchlist array.
+ *
  * @returns {void}
  */
 function handleWatchlistToggle() {
@@ -121,8 +142,17 @@ function handleWatchlistToggle() {
 }
 
 /**
- * Binds active item metadata properties and historical bid collections onto corresponding HTML DOM elements.
- * @param {Object} item - The active product object structure received from the API layer.
+ * Renders product details, media assets, current prices, and bid history table into DOM.
+ *
+ * @param {Object} item - Detailed product entity retrieved from API.
+ * @param {number} item.id - Product unique ID.
+ * @param {string} item.title - Product title.
+ * @param {string} item.description - Product detailed description.
+ * @param {number} [item.currentPrice] - Current highest bid amount.
+ * @param {number} item.startingPrice - Default starting price.
+ * @param {Array<{imageUrl: string}>} [item.images] - Product image collection.
+ * @param {Array<{username: string, amount: number, isProxy: boolean, bidTime: string}>} [item.lastBids] - Recent bid history records.
+ * @returns {void}
  */
 function renderProduct(item) {
     const activePrice = item.currentPrice || item.startingPrice;
@@ -130,12 +160,14 @@ function renderProduct(item) {
     document.getElementById('itemDescription').textContent = item.description;
     document.getElementById('currentPrice').textContent = activePrice.toLocaleString();
     
+    // Resolve product media URL or populate placeholder
     if (item.images && item.images.length > 0) {
         document.getElementById('itemImage').src = getImageUrl(item.images[0].imageUrl);
     } else {
         document.getElementById('itemImage').src = '../../shared/components/placeholder.png';
     }
 
+    // Populate bid history table
     const historyTable = document.getElementById('bidsHistoryTable');
     if (item.lastBids && item.lastBids.length > 0) {
         historyTable.innerHTML = item.lastBids.map(bid => `
@@ -151,16 +183,17 @@ function renderProduct(item) {
 }
 
 /**
- * Intercepts the form submission event, performs input data sanity checks,
- * extracts true dynamic context tokens from persistent stores, and commits transaction payloads.
+ * Handles bid form submission, validating input parameters, verifying active session state,
+ * and dispatching the bidding transaction payload to the API.
+ *
  * @async
- * @param {SubmitEvent} event - The native browser form submit event context.
+ * @param {SubmitEvent} event - The native DOM submit event object.
  * @returns {Promise<void>}
  */
 async function onBidSubmit(event) {
     event.preventDefault();
 
-    // 1. Session verification assertion logic
+    // Session validation check
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser || !currentUser.id) {
         showStatus('עליך להיות מחובר למערכת על מנת לבצע הצעה במכרז.', true);
@@ -172,27 +205,27 @@ async function onBidSubmit(event) {
     const proxyAmount = parseFloat(document.getElementById('proxyAmount').value);
     const activePrice = currentItem.currentPrice || currentItem.startingPrice;
 
-    // Validation Check: Ensure at least one input field contains values
+    // Validation: Require at least one amount input
     if (isNaN(manualAmount) && isNaN(proxyAmount)) {
         showStatus('אנא הזן סכום הצעה או מקסימום אוטומטי', true);
         return;
     }
     
-    // Validation Check: Prevent submissions below or equal to the active top value
+    // Validation: Manual bid must exceed current active price
     if (!isNaN(manualAmount) && manualAmount <= activePrice) {
         showStatus(`סכום ההצעה חייב להיות גבוה מהמחיר הנוכחי (${activePrice.toLocaleString()} ש"ח)`, true);
         return;
     }
 
-    // Secure UI transition states to prevent multi-submit race conditions
+    // Disable submission button during network request
     submitBidBtn.disabled = true;
     submitBidBtn.textContent = 'מעבד הצעה...';
     uiMessage.style.display = 'none';
 
     try {
         /**
-         * API Contract Compliance Payload Map Configuration.
-         * Dynamically populated utilizing true session identities to correct multi-account routing failures.
+         * Bid payload structured according to backend API specifications.
+         * @type {{itemId: number, userId: number, amount: number, maxProxyAmount: (number|null)}}
          */
         const bidPayload = {
             itemId: currentItem.id,
@@ -204,7 +237,7 @@ async function onBidSubmit(event) {
         await placeBid(bidPayload);
         showStatus('ההצעה התקבלה בהצלחה!');
         
-        // Refresh interface layout to fetch and display the updated bid sequence from the DB
+        // Refresh page to sync view with updated state
         setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
         console.error('Bidding orchestration transaction failed:', err);
@@ -215,7 +248,8 @@ async function onBidSubmit(event) {
 }
 
 /**
- * Orchestrates the full initialization sequence of Screen 3 on module insertion.
+ * Initializes item view components on page load.
+ *
  * @async
  * @returns {Promise<void>}
  */
@@ -232,7 +266,7 @@ async function init() {
         renderProduct(currentItem);
         renderWatchlistButton(currentItem.id);
         
-        // Boot active countdown calculation runtime tickers
+        // Start live countdown ticker
         updateTimer(currentItem.endTime);
         countdownInterval = setInterval(() => updateTimer(currentItem.endTime), 1000);
     } catch (err) {
@@ -241,13 +275,16 @@ async function init() {
     }
 }
 
-// ==========================================
-// Operational Event Listeners Declarations
-// ==========================================
+/* ============================================================================
+   Event Listener Registrations
+   ============================================================================ */
+
 document.addEventListener('DOMContentLoaded', init);
+
 if (bidForm) {
     bidForm.addEventListener('submit', onBidSubmit);
 }
+
 if (watchlistBtn) {
     watchlistBtn.addEventListener('click', handleWatchlistToggle);
 }

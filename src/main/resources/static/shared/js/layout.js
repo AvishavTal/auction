@@ -1,9 +1,26 @@
 /**
- * Shared Layout Engine - Dynamic Global Navbar
- * Generates navbar links based on authentication state and handles logout events.
- * All comments are strictly in English.
+ * ============================================================================
+ * Shared Layout Engine & Navigation Manager
+ * ============================================================================
+ *
+ * @file layout.js
+ * @module shared/layout
+ * @description Shared layout engine module. Provides client-side route protection
+ *              guards (`requireLogin`) and dynamic navbar injection (`injectNavbar`)
+ *              that adapts navigation links based on user authentication state in `localStorage`.
  */
 
+/* ============================================================================
+   1. Route Protection & Auth Guards
+   ============================================================================ */
+
+/**
+ * Asserts user authentication status via `localStorage`.
+ * If the user is unauthenticated, redirects the browser to the authentication view (`../auth/index.html`).
+ *
+ * @function requireLogin
+ * @returns {boolean} Returns `true` if the session is authenticated; otherwise redirects and returns `false`.
+ */
 export function requireLogin() {
     if (localStorage.getItem('isLoggedIn') !== 'true') {
         window.location.href = '../auth/index.html';
@@ -12,12 +29,19 @@ export function requireLogin() {
     return true;
 }
 
-/**
- * Shared Layout Engine - Dynamic Global Navbar
- * Updated to include the "My Activity" link for logged-in users.
- * All comments are strictly in English.
- */
+/* ============================================================================
+   2. Dynamic Layout Injection Services
+   ============================================================================ */
 
+/**
+ * Dynamically builds and injects the global navigation header into `#navbar-placeholder`.
+ * Renders user greeting, activity links, and logout controls for authenticated users,
+ * or login/registration prompts for guest users. Attaches session termination event listeners.
+ *
+ * @async
+ * @function injectNavbar
+ * @returns {Promise<void>}
+ */
 export async function injectNavbar() {
     const placeholder = document.getElementById('navbar-placeholder');
     if (!placeholder) return;

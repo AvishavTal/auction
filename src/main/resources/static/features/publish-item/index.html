@@ -1,28 +1,52 @@
+<!--
+  ============================================================================
+  Publish New Item View Template
+  ============================================================================
+
+  @file index.html
+  @module publish-item
+  @description HTML5 form template for creating and publishing new auction listings.
+               Includes fields for item title, category selection, detailed description,
+               image upload, customized date/time split picker for auction expiry,
+               and starting bid price.
+  @dependencies
+    - Stylesheets: ../../shared/css/global.css, ./publish.css
+    - Scripts: ./publish.js (ES Module)
+-->
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Publish Product | Auction System</title>
+
+    <!-- Global Framework & View-Specific Stylesheets -->
     <link rel="stylesheet" href="../../shared/css/global.css">
     <link rel="stylesheet" href="publish.css">
 </head>
 <body>
     
+    <!-- Dynamic Navigation Bar Insertion Point (Populated via layout.js) -->
     <div id="navbar-placeholder"></div>
 
+    <!-- Main Form Layout Container -->
     <div class="main-content">
         <div class="form-container">
-            <h2>4. פרסום מוצר חדש</h2>
+            <h2> פרסום מוצר חדש</h2>
             
+            <!-- Contextual Status / Alert Notification Placeholder -->
             <div id="uiMessage" class="ui-message"></div>
             
+            <!-- Item Creation & Publication Form -->
             <form id="publishItemForm">
+                
+                <!-- Product Title Input -->
                 <div class="form-group">
                     <label for="title">שם המוצר:</label>
                     <input type="text" id="title" required>
                 </div>
 
+                <!-- Category Selection Dropdown (Populated via API) -->
                 <div class="form-group">
                     <label for="categoryId">קטגוריה:</label>
                     <select id="categoryId" required>
@@ -30,17 +54,22 @@
                     </select>
                 </div>
 
+                <!-- Product Description Textarea -->
                 <div class="form-group">
                     <label for="description">תיאור המוצר:</label>
                     <textarea id="description" required></textarea>
                 </div>
 
+                <!-- Image File Upload Input -->
                 <div class="form-group">
                     <label for="imageFile">העלאת תמונה:</label>
                     <input type="file" id="imageFile" accept="image/*" required>
                 </div>
 
+                <!-- Expiration DateTime & Starting Price Row -->
                 <div class="row">
+                    
+                    <!-- Auction Expiration DateTime Split Selection Group -->
                     <div class="col form-group">
                         <label>מועד סיום המכרז:</label>
                         <div class="datetime-split-container">
@@ -53,12 +82,15 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Starting Price Input -->
                     <div class="col form-group">
                         <label for="startingPrice">מחיר התחלתי (ש"ח):</label>
                         <input type="number" id="startingPrice" min="1" step="1" required>
                     </div>
                 </div>
 
+                <!-- Form Submission & Cancellation Action Buttons -->
                 <div class="actions">
                     <button type="submit" id="submitBtn" class="btn btn-primary">פרסם מכירה עכשיו</button>
                     <button type="button" class="btn btn-secondary" id="cancelBtn">ביטול</button>
@@ -67,6 +99,7 @@
         </div>
     </div>
 
+    <!-- Client-Side Item Publishing Controller Module -->
     <script type="module" src="publish.js"></script>
 </body>
 </html>
